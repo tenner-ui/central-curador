@@ -97,6 +97,10 @@
     .hero-content{margin:0;padding:36px 22px;} .hero h1{font-size:32px;}
     .checkgrid{grid-template-columns:1fr;} .tabbar{top:118px;} .tipsbar{top:44px;}
   }
+.launchpad{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px;}
+  .launchpad .lplab{color:#e2d8c4;font-family:"Helvetica Neue",Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:.03em;}
+  .launchpad a{display:inline-flex;align-items:center;padding:6px 12px;border-radius:20px;background:rgba(0,0,0,.5);border:1px solid #454545;color:#e9dfce;text-decoration:none;font-family:"Helvetica Neue",Arial,sans-serif;font-size:12px;font-weight:600;transition:all .15s;}
+  .launchpad a:hover{border-color:var(--gold);color:#fff;}
 </style>
 </head>
 <body>
@@ -115,15 +119,24 @@
       <a href="https://medtenner.com.br" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm6.9 6h-2.9a15.7 15.7 0 00-1.2-3.6A8 8 0 0118.9 8zM12 4c.8 1.1 1.4 2.5 1.8 4h-3.6C10.6 6.5 11.2 5.1 12 4zM4.3 14a8 8 0 010-4h3.3a17.6 17.6 0 000 4H4.3zm.8 2h2.9c.3 1.3.7 2.5 1.2 3.6A8 8 0 015.1 16zM8 8H5.1a8 8 0 014.1-3.6A15.7 15.7 0 008 8zm4 12c-.8-1.1-1.4-2.5-1.8-4h3.6c-.4 1.5-1 2.9-1.8 4zm2.2-6H9.8a15.9 15.9 0 010-4h4.4a15.9 15.9 0 010 4zm.6 5.6c.5-1.1.9-2.3 1.2-3.6h2.9a8 8 0 01-4.1 3.6zM16.4 14a17.6 17.6 0 000-4h3.3a8 8 0 010 4h-3.3z"/></svg>medtenner.com.br</a>
       <a href="https://institutovitality.com" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm6.9 6h-2.9a15.7 15.7 0 00-1.2-3.6A8 8 0 0118.9 8zM12 4c.8 1.1 1.4 2.5 1.8 4h-3.6C10.6 6.5 11.2 5.1 12 4zM4.3 14a8 8 0 010-4h3.3a17.6 17.6 0 000 4H4.3zm.8 2h2.9c.3 1.3.7 2.5 1.2 3.6A8 8 0 015.1 16zM8 8H5.1a8 8 0 014.1-3.6A15.7 15.7 0 008 8zm4 12c-.8-1.1-1.4-2.5-1.8-4h3.6c-.4 1.5-1 2.9-1.8 4zm2.2-6H9.8a15.9 15.9 0 010-4h4.4a15.9 15.9 0 010 4zm.6 5.6c.5-1.1.9-2.3 1.2-3.6h2.9a8 8 0 01-4.1 3.6zM16.4 14a17.6 17.6 0 000-4h3.3a8 8 0 010 4h-3.3z"/></svg>Instituto Vitality</a>
     </div>
+    <div class="launchpad">
+      <span class="lplab">Ferramentas de IA:</span>
+      <a href="https://aistudio.google.com/" target="_blank" rel="noopener">Google AI</a>
+      <a href="https://opal.withgoogle.com/" target="_blank" rel="noopener">Opal</a>
+      <a href="https://stitch.withgoogle.com/" target="_blank" rel="noopener">Stitch</a>
+      <a href="https://labs.google/fx/tools/flow" target="_blank" rel="noopener">Flow</a>
+      <a href="https://antigravity.google/" target="_blank" rel="noopener">Antigravity</a>
+    </div>
   </div>
 </header>
 
 <div class="connbar">
   <span class="cst" id="connStatus">● Não conectado</span>
-  <input type="password" id="apiKey" placeholder="Cole sua API key da Claude (sk-ant-...)" autocomplete="off">
+  <select id="provider" style="min-width:148px"><option value="claude">Claude (Anthropic)</option><option value="gemini">Google Gemini</option></select>
+  <input type="password" id="apiKey" placeholder="Cole sua API key (Claude ou Google AI)" autocomplete="off">
   <select id="modelSel" style="display:none"></select>
   <button class="go" onclick="connectClaude()">Conectar</button>
-  <span class="cnote">🔒 A chave fica só na memória deste navegador.</span>
+  <span class="cnote">🔒 A chave fica salva só neste navegador. <a href="#" id="forgetKey" style="color:#9f958a">esquecer</a></span>
 </div>
 
 <div class="tipsbar"><span class="tlab">💡 Dica do Curador:</span><span class="ttxt" id="tipTxt">Carregando dica…</span></div>
@@ -241,23 +254,37 @@ var TIPS=[
 (function(){var i=0,el=document.getElementById('tipTxt');function rot(){el.textContent=TIPS[i%TIPS.length];i++;}rot();setInterval(rot,7000);})();
 
 /* ===== Conexão Claude ===== */
-var API={key:'',ready:false};
+var API={key:'',ready:false,provider:'claude'};
 var HEAD=function(){return {'x-api-key':API.key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true','content-type':'application/json'};};
 async function connectClaude(){
   var k=document.getElementById('apiKey').value.trim();
+  var prov=(document.getElementById('provider')||{value:'claude'}).value;
   var st=document.getElementById('connStatus');
   if(!k){st.textContent='● Cole sua chave primeiro';st.className='cst';return;}
-  API.key=k; st.textContent='● Conectando...'; st.className='cst';
+  API.key=k; API.provider=prov; st.textContent='● Conectando...'; st.className='cst';
+  var sel=document.getElementById('modelSel');
   try{
-    var r=await fetch('https://api.anthropic.com/v1/models?limit=100',{headers:HEAD()});
-    if(!r.ok){var e=await r.text();throw new Error('HTTP '+r.status+' '+(r.status===401?'(chave inválida)':'')+' '+e.slice(0,120));}
-    var d=await r.json();
-    var sel=document.getElementById('modelSel'); sel.innerHTML='';
-    (d.data||[]).forEach(function(m){var o=document.createElement('option');o.value=m.id;o.textContent=m.display_name||m.id;sel.appendChild(o);});
-    if(!sel.options.length){var o=document.createElement('option');o.value='claude-sonnet-4-20250514';o.textContent='claude-sonnet-4';sel.appendChild(o);}
-    var pref=-1;for(var i=0;i<sel.options.length;i++){if(/sonnet/i.test(sel.options[i].value)){pref=i;break;}}
-    sel.selectedIndex=pref>=0?pref:0; sel.style.display='';
-    API.ready=true; st.textContent='✓ Conectado'; st.className='cst ok';
+    if(prov==='claude'){
+      var r=await fetch('https://api.anthropic.com/v1/models?limit=100',{headers:HEAD()});
+      if(!r.ok){var e=await r.text();throw new Error('HTTP '+r.status+' '+(r.status===401?'(chave inválida)':'')+' '+e.slice(0,120));}
+      var d=await r.json(); sel.innerHTML='';
+      (d.data||[]).forEach(function(m){var o=document.createElement('option');o.value=m.id;o.textContent=m.display_name||m.id;sel.appendChild(o);});
+      if(!sel.options.length){var o=document.createElement('option');o.value='claude-sonnet-4-20250514';o.textContent='claude-sonnet-4';sel.appendChild(o);}
+      var pref=-1;for(var i=0;i<sel.options.length;i++){if(/sonnet/i.test(sel.options[i].value)){pref=i;break;}}
+      sel.selectedIndex=pref>=0?pref:0;
+    } else {
+      var r=await fetch('https://generativelanguage.googleapis.com/v1beta/models?key='+encodeURIComponent(k));
+      if(!r.ok){var e=await r.text();throw new Error('HTTP '+r.status+' '+((r.status===400||r.status===403)?'(chave inválida)':'')+' '+e.slice(0,120));}
+      var d=await r.json(); sel.innerHTML='';
+      (d.models||[]).filter(function(m){return (m.supportedGenerationMethods||[]).indexOf('generateContent')>-1;}).forEach(function(m){var id=m.name.replace('models/','');var o=document.createElement('option');o.value=id;o.textContent=id;sel.appendChild(o);});
+      if(!sel.options.length){var o=document.createElement('option');o.value='gemini-1.5-flash';o.textContent='gemini-1.5-flash';sel.appendChild(o);}
+      var pref=-1;for(var i=0;i<sel.options.length;i++){if(/flash/i.test(sel.options[i].value)){pref=i;break;}}
+      sel.selectedIndex=pref>=0?pref:0;
+    }
+    try{var sm=localStorage.getItem('curador_model'); if(sm){for(var j=0;j<sel.options.length;j++){if(sel.options[j].value===sm){sel.selectedIndex=j;break;}}}}catch(e){}
+    sel.style.display='';
+    API.ready=true; st.textContent='✓ Conectado ('+(prov==='claude'?'Claude':'Gemini')+')'; st.className='cst ok';
+    try{localStorage.setItem('curador_key',k);localStorage.setItem('curador_provider',prov);localStorage.setItem('curador_model',sel.value);}catch(e){}
   }catch(err){API.ready=false; st.textContent='● Falha ao conectar'; st.className='cst'; alert('Não consegui conectar: '+err.message);}
 }
 
@@ -281,8 +308,21 @@ var SYS=[
 ].join('\n');
 
 async function ask(userPrompt,maxTokens){
+  var model=document.getElementById('modelSel').value;
+  if(API.provider==='gemini'){
+    var url='https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+encodeURIComponent(API.key);
+    var r=await fetch(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({
+      system_instruction:{parts:[{text:SYS}]},
+      contents:[{role:'user',parts:[{text:userPrompt}]}],
+      generationConfig:{maxOutputTokens:maxTokens||3800}
+    })});
+    if(!r.ok){var e=await r.text();throw new Error('HTTP '+r.status+': '+e.slice(0,240));}
+    var d=await r.json();
+    var c=(d.candidates&&d.candidates[0]&&d.candidates[0].content&&d.candidates[0].content.parts)||[];
+    return c.map(function(p){return p.text||'';}).join('\n');
+  }
   var r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:HEAD(),body:JSON.stringify({
-    model:document.getElementById('modelSel').value, max_tokens:maxTokens||3800, system:SYS,
+    model:model, max_tokens:maxTokens||3800, system:SYS,
     messages:[{role:'user',content:userPrompt}]
   })});
   if(!r.ok){var e=await r.text();throw new Error('HTTP '+r.status+': '+e.slice(0,240));}
@@ -365,6 +405,14 @@ function gerarComando(){
 }
 ['temaInput','temaRoteiro','refHandle'].forEach(function(id){var e=document.getElementById(id);if(e)e.addEventListener('keydown',function(ev){if(ev.key==='Enter'){if(id==='temaInput')avaliarTema();else if(id==='temaRoteiro')gerarRoteiro();else analisarRef();}});});
 document.getElementById('apiKey').addEventListener('keydown',function(ev){if(ev.key==='Enter')connectClaude();});
+(function(){try{
+  var k=localStorage.getItem('curador_key'); var prov=localStorage.getItem('curador_provider')||'claude';
+  var ps=document.getElementById('provider'); if(ps)ps.value=prov;
+  if(k){document.getElementById('apiKey').value=k; connectClaude();}
+}catch(e){}
+var ms=document.getElementById('modelSel'); if(ms)ms.addEventListener('change',function(){try{localStorage.setItem('curador_model',ms.value);}catch(e){}});
+var fk=document.getElementById('forgetKey'); if(fk)fk.addEventListener('click',function(ev){ev.preventDefault();try{localStorage.removeItem('curador_key');localStorage.removeItem('curador_provider');localStorage.removeItem('curador_model');}catch(e){}var st=document.getElementById('connStatus');st.textContent='● Chave esquecida';st.className='cst';document.getElementById('apiKey').value='';API.ready=false;});
+})();
 </script>
 </body>
 </html>
