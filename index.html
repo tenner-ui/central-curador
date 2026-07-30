@@ -145,6 +145,7 @@
   <button data-tab="legendas" onclick="switchTab(this)">✍️ Legendas & Hashtags</button>
   <button data-tab="evidencias" onclick="switchTab(this)">🔬 Evidências (PubMed)</button>
   <button data-tab="imagem" onclick="switchTab(this)">🎨 Direção de Arte</button>
+  <button data-tab="video" onclick="switchTab(this)">🎥 Vídeo (IA)</button>
   <button data-tab="referencia" onclick="switchTab(this)">🔎 Analisar Referência</button>
   <button data-tab="estudo" onclick="switchTab(this)">📚 Estudo (HormoneLab)</button>
   <button data-tab="mais" onclick="switchTab(this)">➕ Mais integrações</button>
@@ -217,6 +218,20 @@
   <div class="outwrap" id="outImgArt"></div>
   <div class="outwrap" id="outCarrossel"></div>
   <div class="outwrap" id="outImg"></div>
+</div></section>
+
+<section class="tabpane" id="tab-video"><div class="tool">
+  <div class="tk">IA · usa o tema central</div><h3>🎥 Vídeo com IA (Veo)</h3>
+  <p class="sub">Gera um clipe curto (~8s) sobre o tema central na identidade da marca (verde + dourado) — ótimo como gancho de Reel/Story. O Claude roteiriza a cena e o Veo renderiza. <b>Leva 1–3 min</b> e tem custo maior que a imagem.</p>
+  <div class="selrow">
+    <select id="vidAspect">
+      <option value="9:16">Vertical 9:16 (Reels/Story)</option>
+      <option value="16:9">Horizontal 16:9</option>
+      <option value="1:1">Quadrado 1:1</option>
+    </select>
+    <button class="go" id="btnVideo" onclick="gerarVideo()">🎬 Gerar vídeo</button>
+  </div>
+  <div class="outwrap" id="outVideo"></div>
 </div></section>
 
 <section class="tabpane" id="tab-referencia"><div class="tool">
@@ -390,6 +405,45 @@ async function gerarCarrossel(){
   var okimgs=imgs.filter(function(x){return x.src;});
   var bt=document.getElementById('btnBaixarTodas');
   if(bt)bt.onclick=function(){okimgs.forEach(function(im,k){setTimeout(function(){var a=document.createElement('a');a.href=im.src;a.download=im.fn;document.body.appendChild(a);a.click();a.remove();},k*600);});};
+  btn.disabled=false;
+}
+async function gerarVideo(){
+  if(needTema('outVideo'))return;
+  if(!API.ready){document.getElementById('outVideo').innerHTML='<div class="needconn">O servidor ainda nao tem a chave configurada. Clique em Recarregar modelos.</div>';return;}
+  var t=getTema();
+  var aspect=document.getElementById('vidAspect').value;
+  var btn=document.getElementById('btnVideo'),out=document.getElementById('outVideo');
+  btn.disabled=true;
+  out.innerHTML='<div class="loading"><span class="spin"></span>1/3 - Roteirizando a cena do video com a IA...</div>';
+  var vprompt='';
+  try{
+    vprompt=await ask('Escreva UM prompt de video em INGLES (uma frase rica e visual, sem aspas), para um clipe vertical de ~8s de Instagram sobre "'+t+'", na identidade do Instituto Vitality: fundo verde esmeralda profundo, detalhes dourados, estetica editorial clinica premium, camera suave. Cena concreta e elegante, sem texto na tela, sem pessoas identificaveis. Responda apenas com o prompt.',400);
+    vprompt=(vprompt||'').replace(/\s+/g,' ').trim().slice(0,600);
+  }catch(e){}
+  if(!vprompt)vprompt='Cinematic vertical clip for a metabolic-health medical brand. Deep emerald-green editorial background with gold accents, subtle abstract molecule of golden light, calm premium clinical mood, soft camera push-in. Theme: '+t+'. No on-screen text.';
+  var op=null;
+  try{
+    var r=await fetch(BACKEND,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'video_start',aspect:aspect,prompt:vprompt})});
+    var d=await r.json();
+    if(d.error||!d.operation)throw new Error(d.error||'Falha ao iniciar');
+    op=d.operation;
+  }catch(e){out.innerHTML='<div class="errbox"><b>Erro ao iniciar:</b> '+esc(e.message)+'</div>';btn.disabled=false;return;}
+  var t0=Date.now();
+  for(var i=0;i<48;i++){
+    await new Promise(function(x){setTimeout(x,10000);});
+    var el=Math.round((Date.now()-t0)/1000);
+    out.innerHTML='<div class="loading"><span class="spin"></span>2/3 - Gerando o video com o Veo... ('+el+'s - pode levar 1 a 3 min, nao feche a aba)</div>';
+    try{
+      var pr=await fetch(BACKEND,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'video_poll',operation:op})});
+      var pd=await pr.json();
+      if(pd.done){
+        if(pd.url){out.innerHTML='<div class="imgout"><video src="'+pd.url+'" controls playsinline style="width:100%;max-width:420px;border-radius:14px;border:1px solid #333;display:block;"></video><div class="imgbar"><a class="go" href="'+pd.url+'" download>Baixar video</a><button class="go alt" onclick="gerarVideo()">Gerar outro</button></div><p class="sub" style="margin-top:8px;font-size:12px;opacity:.8">Cena: '+esc(vprompt)+'</p></div>';}
+        else{out.innerHTML='<div class="errbox"><b>Erro:</b> '+esc(pd.error||'sem video')+'</div>';}
+        btn.disabled=false;return;
+      }
+    }catch(e){}
+  }
+  out.innerHTML='<div class="errbox">O video esta demorando mais que o esperado. Ele pode ainda estar processando - tente Gerar de novo em instantes.</div>';
   btn.disabled=false;
 }
 function analisarRef(){
