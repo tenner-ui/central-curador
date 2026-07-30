@@ -67,6 +67,10 @@
   .selrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
   .go{background:var(--gold);color:#2a1207;border:none;border-radius:11px;padding:13px 22px;font-size:15px;font-weight:700;cursor:pointer;font-family:"Helvetica Neue",Arial,sans-serif;}
   .go:hover{filter:brightness(1.08);} .go:disabled{opacity:.5;cursor:not-allowed;}
+  .go.alt{background:transparent;color:var(--gold);border:1px solid var(--gold);}
+  a.go{text-decoration:none;display:inline-block;}
+  .imgout{margin-top:6px;} .imgout img{max-width:100%;border-radius:14px;border:1px solid #333;box-shadow:0 6px 24px rgba(0,0,0,.45);display:block;}
+  .imgbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
   .go.alt{background:#1a1a1a;color:#e9dfce;border:1px solid var(--gold);}
   .lbl{color:#e2d8c4;font-size:13px;margin:14px 0 6px;font-family:"Helvetica Neue",Arial,sans-serif;}
   .checkgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:6px;}
@@ -190,16 +194,19 @@
 </div></section>
 
 <section class="tabpane" id="tab-imagem"><div class="tool">
-  <div class="tk">IA · usa o tema central</div><h3>🎨 Direção de Arte &amp; Prompt de Imagem</h3>
-  <p class="sub">Gera o conceito visual do post sobre o tema central na identidade do Instituto (preto/dourado, editorial) + um <b>prompt em inglês pronto</b> para colar no Ideogram, Gemini ou Canva e renderizar a imagem.</p>
+  <div class="tk">IA · usa o tema central</div><h3>🎨 Direção de Arte &amp; Imagem</h3>
+  <p class="sub">Gera o conceito visual do post na identidade do Instituto (preto/dourado, editorial) e agora <b>renderiza a imagem de verdade</b> pela IA — pronta para baixar e usar.</p>
   <div class="selrow">
     <select id="fmtImg">
       <option value="capa de carrossel (1080x1350)">Capa de carrossel</option>
       <option value="post de feed (1080x1080)">Post de feed</option>
       <option value="story (1080x1920)">Story</option>
     </select>
-    <button class="go" id="btnImg" onclick="gerarArte()">Gerar direção de arte</button>
+    <button class="go alt" id="btnImg" onclick="gerarArte()">📝 Direção de arte (texto)</button>
+    <button class="go" id="btnImgGen" onclick="gerarImagem()">🖼 Gerar imagem</button>
   </div>
+  <p class="sub" style="margin:6px 0 0;font-size:12.5px;opacity:.8">💡 Dica: o botão <b>Direção de arte</b> te dá o conceito e um prompt refinado; o botão <b>Gerar imagem</b> cria a arte direto. Pra imagem com base num conceito específico, gere o texto primeiro e depois clique em Gerar imagem.</p>
+  <div class="outwrap" id="outImgArt"></div>
   <div class="outwrap" id="outImg"></div>
 </div></section>
 
@@ -309,6 +316,29 @@ function avaliarTema(){if(needTema('outAval'))return;var t=getTema();run('outAva
 function gerarRoteiro(){if(needTema('outRot'))return;var t=getTema(),f=document.getElementById('formatoRoteiro').value,v=document.getElementById('contaRoteiro').value;run('outRot','btnRot','Crie um ROTEIRO completo, ORIGINAL e com potencial viral.\n\nTEMA: "'+t+'"\nFORMATO: '+f+'\nVOZ: '+v+'\n\nInclua: gancho de 3s inédito; desenvolvimento (uma ideia por trecho); CTA que gera comentário; marcação de tempos/telas (Reel/Story) ou card a card (Carrossel); LEGENDA pronta com nota de individualização e assinatura correta; 6–8 hashtags. Markdown.',3900);}
 function gerarLegendas(){if(needTema('outLeg'))return;var t=getTema(),tom=document.getElementById('tomLeg').value;run('outLeg','btnLeg','Escreva 3 variações de LEGENDA de Instagram sobre "'+t+'", em tom '+tom+'. Cada variação: gancho forte na 1ª linha + corpo curto + CTA que gera comentário (pergunta fácil) + nota de individualização/avaliação médica + assinatura correta. No fim, um bloco com 8 hashtags relevantes. Markdown, separando as 3 variações.',3200);}
 function gerarArte(){if(needTema('outImg'))return;var t=getTema(),f=document.getElementById('fmtImg').value;run('outImg','btnImg','Crie a DIREÇÃO DE ARTE para uma '+f+' sobre "'+t+'", na identidade do Instituto Vitality (fundo preto/escuro, dourado #C9A44C, tipografia serifada elegante, ar editorial clínico premium; opção de foto do Dr. Tenner em P&B). Entregue em Markdown:\n## Conceito visual\n## Composição / layout\n## Paleta e tipografia\n## Texto sugerido na arte (curto)\n## Prompt de imagem (em inglês)\nUm prompt detalhado, pronto para colar no Ideogram, Google Gemini ou Canva para renderizar.',3000);}
+async function gerarImagem(){
+  if(needTema('outImgArt'))return;
+  if(!API.ready){document.getElementById('outImgArt').innerHTML='<div class=\"needconn\">O servidor ainda não tem a chave configurada. Clique em Recarregar modelos.</div>';return;}
+  var t=getTema(),f=document.getElementById('fmtImg').value;
+  var btn=document.getElementById('btnImgGen'),out=document.getElementById('outImgArt');
+  btn.disabled=true;out.innerHTML='<div class=\"loading\"><span class=\"spin\"></span>Renderizando imagem com a IA… (pode levar ~15s)</div>';
+  var prompt='Professional Instagram '+f+' for a Brazilian metabolic-health medical brand (Instituto Vitality). Theme: \"'+t+'\". Visual identity: deep black background, elegant gold (#C9A44C) accents, refined editorial serif typography, premium minimalist clinical aesthetic, subtle abstract molecular/scientific motif, high-end magazine feel, clear focal space for a headline. Tasteful, trustworthy, educational — not salesy; no medication brand names, no logos, no watermark. Ultra sharp, studio quality, high detail.';
+  var d=null;
+  try{
+    for(var i=0;i<3;i++){
+      var r=await fetch(BACKEND,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'image',prompt:prompt})});
+      d=await r.json();
+      if(d.image)break;
+      if(d.error&&/demanda|high demand|overloaded|503|UNAVAILABLE/i.test(d.error)){out.innerHTML='<div class=\"loading\"><span class=\"spin\"></span>Modelo com alta demanda, tentando de novo… ('+(i+2)+'/3)</div>';await new Promise(function(x){setTimeout(x,3500);});continue;}
+      break;
+    }
+    if(!d||!d.image)throw new Error((d&&d.error)||'Não retornou imagem.');
+    var src='data:'+(d.mime||'image/png')+';base64,'+d.image;
+    var fn='curador-'+(t.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40)||'arte')+'.png';
+    out.innerHTML='<div class=\"imgout\"><img src=\"'+src+'\" alt=\"arte gerada pela IA\"><div class=\"imgbar\"><a class=\"go\" href=\"'+src+'\" download=\"'+fn+'\">⬇ Baixar imagem</a><button class=\"go alt\" onclick=\"gerarImagem()\">🔄 Gerar outra</button></div></div>';
+  }catch(err){out.innerHTML='<div class=\"errbox\"><b>Erro:</b> '+esc(err.message)+'</div>';}
+  finally{btn.disabled=false;}
+}
 
 /* ===== PubMed (API real, sem chave) ===== */
 async function buscarPubMed(){
