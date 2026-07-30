@@ -110,12 +110,11 @@
 </header>
 
 <div class="connbar">
-  <span class="cst" id="connStatus">● Não conectado</span>
+  <span class="cst" id="connStatus">● Conectando ao servidor...</span>
   <select id="provider" style="min-width:148px"><option value="claude">Claude (Anthropic)</option><option value="gemini">Google Gemini</option></select>
-  <input type="password" id="apiKey" placeholder="Cole sua API key (Claude ou Google AI)" autocomplete="off">
   <select id="modelSel" style="display:none"></select>
-  <button class="go" onclick="connectClaude()">Conectar</button>
-  <span class="cnote">🔒 A chave fica salva só neste navegador. <a href="#" id="forgetKey" style="color:#9f958a">esquecer</a></span>
+  <button class="go" onclick="loadModels()">Recarregar modelos</button>
+  <span class="cnote">🔒 As chaves ficam seguras no servidor (Supabase) — você não precisa colar nada.</span>
 </div>
 
 <div class="themebar">
@@ -260,48 +259,33 @@ var TIPS=['O gancho vive nos 3 primeiros segundos — comece pela frase mais for
 (function(){var i=0,el=document.getElementById('tipTxt');function r(){el.textContent=TIPS[i%TIPS.length];i++;}r();setInterval(r,7000);})();
 
 /* ===== conexão (Claude/Gemini) + persistência ===== */
-var API={key:'',ready:false,provider:'claude'};
-var HEAD=function(){return {'x-api-key':API.key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true','content-type':'application/json'};};
-async function connectClaude(){
-  var k=document.getElementById('apiKey').value.trim(),prov=document.getElementById('provider').value,st=document.getElementById('connStatus'),sel=document.getElementById('modelSel');
-  if(!k){st.textContent='● Cole sua chave primeiro';st.className='cst';return;}
-  API.key=k;API.provider=prov;st.textContent='● Conectando...';st.className='cst';
+var BACKEND='https://qqjebmisnlrlzglfuftf.supabase.co/functions/v1/curador-ai';
+var API={ready:false,provider:'claude'};
+async function loadModels(){
+  var prov=document.getElementById('provider').value,st=document.getElementById('connStatus'),sel=document.getElementById('modelSel');
+  API.provider=prov;st.textContent='● Carregando modelos...';st.className='cst';
   try{
-    if(prov==='claude'){
-      var r=await fetch('https://api.anthropic.com/v1/models?limit=100',{headers:HEAD()});
-      if(!r.ok){throw new Error('HTTP '+r.status+(r.status===401?' (chave inválida)':''));}
-      var d=await r.json();sel.innerHTML='';(d.data||[]).forEach(function(m){var o=document.createElement('option');o.value=m.id;o.textContent=m.display_name||m.id;sel.appendChild(o);});
-      if(!sel.options.length){var o=document.createElement('option');o.value='claude-sonnet-4-20250514';o.textContent='claude-sonnet-4';sel.appendChild(o);}
-      var pf=-1;for(var i=0;i<sel.options.length;i++){if(/sonnet/i.test(sel.options[i].value)){pf=i;break;}}sel.selectedIndex=pf>=0?pf:0;
-    }else{
-      var r=await fetch('https://generativelanguage.googleapis.com/v1beta/models?key='+encodeURIComponent(k));
-      if(!r.ok){throw new Error('HTTP '+r.status+((r.status===400||r.status===403)?' (chave inválida)':''));}
-      var d=await r.json();sel.innerHTML='';(d.models||[]).filter(function(m){return (m.supportedGenerationMethods||[]).indexOf('generateContent')>-1;}).forEach(function(m){var id=m.name.replace('models/','');var o=document.createElement('option');o.value=id;o.textContent=id;sel.appendChild(o);});
-      if(!sel.options.length){var o=document.createElement('option');o.value='gemini-1.5-flash';o.textContent='gemini-1.5-flash';sel.appendChild(o);}
-      var pf=-1;for(var i=0;i<sel.options.length;i++){if(/flash/i.test(sel.options[i].value)){pf=i;break;}}sel.selectedIndex=pf>=0?pf:0;
-    }
+    var r=await fetch(BACKEND,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'models',provider:prov})});
+    var d=await r.json();if(d.error){throw new Error(d.error);}
+    sel.innerHTML='';(d.models||[]).forEach(function(m){var o=document.createElement('option');o.value=m;o.textContent=m;sel.appendChild(o);});
+    if(!sel.options.length){var o=document.createElement('option');o.value=(prov==='gemini'?'gemini-1.5-flash':'claude-sonnet-4-20250514');o.textContent=o.value;sel.appendChild(o);}
+    var pf=-1,rx=(prov==='gemini'?/flash/i:/sonnet/i);for(var i=0;i<sel.options.length;i++){if(rx.test(sel.options[i].value)){pf=i;break;}}sel.selectedIndex=pf>=0?pf:0;
     try{var sm=localStorage.getItem('curador_model');if(sm){for(var j=0;j<sel.options.length;j++){if(sel.options[j].value===sm){sel.selectedIndex=j;break;}}}}catch(e){}
-    sel.style.display='';API.ready=true;st.textContent='✓ Conectado ('+(prov==='claude'?'Claude':'Gemini')+')';st.className='cst ok';
-    try{localStorage.setItem('curador_key',k);localStorage.setItem('curador_provider',prov);localStorage.setItem('curador_model',sel.value);}catch(e){}
-  }catch(err){API.ready=false;st.textContent='● Falha ao conectar';st.className='cst';alert('Não consegui conectar: '+err.message);}
+    sel.style.display='';API.ready=true;st.textContent='✓ Backend conectado ('+(prov==='claude'?'Claude':'Gemini')+')';st.className='cst ok';
+    try{localStorage.setItem('curador_provider',prov);}catch(e){}
+  }catch(err){API.ready=false;st.textContent='● Servidor sem chave de '+(prov==='claude'?'Claude':'Gemini')+' (configure os secrets)';st.className='cst';}
 }
 var SYS=['Você é o CURADOR, estrategista de conteúdo de Instagram do Dr. Tenner Nunes — marketing médico brasileiro com conformidade ética rigorosa E criatividade de altíssimo nível.','','PERFIL: Dr. Tenner Nunes — CRM/RR 2920. Titulação OBRIGATÓRIA: "Médico — pós-graduando em Endocrinologia e Metabologia". NUNCA "especialista/endocrinologista/expert" (sem RQE). Foco: emagrecimento e saúde metabólica com análogos de GLP-1/GIP, reposição vitamínica e adjuvantes. Método autoral: Renova Corps(R). Pratica jiu-jitsu e musculação (marca pessoal).','','REGRAS: medicamento pela molécula (tirzepatida, semaglutida, liraglutida), nunca marca; nunca a palavra "soroterapia" (reposição = "sob necessidade, após avaliação médica individual"); toda menção a tratamento com individualização + avaliação médica; registro EDUCATIVO, jamais vendedor; nada de "cura/milagre/garantido/rápido"; @drtennernunes (voz "eu") e @instituto.vitality (voz "nós") SEPARADAS; tudo é RASCUNHO para revisão humana.','','CRIATIVIDADE: seja ORIGINAL a cada resposta; PROIBIDO reutilizar clichês como "não é (só) falta de vontade","a balança é a métrica mais burra","seu corpo não é preguiçoso".','','FORMATO: Markdown limpo, português do Brasil. Termine TODA resposta com "## 💡 Como deixar ainda melhor" (2–3 dicas específicas).'].join('\n');
 async function ask(p,mt){
   var model=document.getElementById('modelSel').value;
-  if(API.provider==='gemini'){
-    var r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+encodeURIComponent(API.key),{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({system_instruction:{parts:[{text:SYS}]},contents:[{role:'user',parts:[{text:p}]}],generationConfig:{maxOutputTokens:mt||3800}})});
-    if(!r.ok){throw new Error('HTTP '+r.status+': '+(await r.text()).slice(0,200));}
-    var d=await r.json();var c=(d.candidates&&d.candidates[0]&&d.candidates[0].content&&d.candidates[0].content.parts)||[];return c.map(function(x){return x.text||'';}).join('\n');
-  }
-  var r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:HEAD(),body:JSON.stringify({model:model,max_tokens:mt||3800,system:SYS,messages:[{role:'user',content:p}]})});
-  if(!r.ok){throw new Error('HTTP '+r.status+': '+(await r.text()).slice(0,200));}
-  var d=await r.json();return (d.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n');
+  var r=await fetch(BACKEND,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({provider:API.provider,model:model,system:SYS,prompt:p,max_tokens:mt||3800})});
+  var d=await r.json();if(d.error)throw new Error(d.error);return d.text||'';
 }
 function md(t){var L=(t||'').replace(/\r/g,'').split('\n'),h='',ul=0,ol=0;function c(){if(ul){h+='</ul>';ul=0;}if(ol){h+='</ol>';ol=0;}}function il(s){s=s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');s=s.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');s=s.replace(/(^|[^*])\*([^*]+)\*/g,'$1<i>$2</i>');s=s.replace(/`([^`]+)`/g,'<code>$1</code>');return s;}for(var i=0;i<L.length;i++){var t2=L[i].trim();if(!t2){c();continue;}if(/^---+$/.test(t2)){c();h+='<hr>';continue;}var hm=/^(#{1,6})\s+(.*)$/.exec(t2);if(hm){c();var lv=Math.min(4,hm[1].length+1);h+='<h'+lv+'>'+il(hm[2])+'</h'+lv+'>';continue;}var um=/^[-*]\s+(.*)$/.exec(t2);if(um){if(!ul){c();h+='<ul>';ul=1;}h+='<li>'+il(um[1])+'</li>';continue;}var om=/^\d+\.\s+(.*)$/.exec(t2);if(om){if(!ol){c();h+='<ol>';ol=1;}h+='<li>'+il(om[1])+'</li>';continue;}c();h+='<p>'+il(t2)+'</p>';}c();return h;}
 function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
 window.copiarTxt=function(el){var t=el.getAttribute('data-full');var ta=document.createElement('textarea');ta.innerHTML=t;t=ta.value;if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){var o=el.textContent;el.textContent='Copiado ✓';setTimeout(function(){el.textContent=o;},1500);});}};
 async function run(outId,btnId,prompt,mt){
-  if(!API.ready){document.getElementById(outId).innerHTML='<div class="needconn">Conecte sua chave (Claude ou Gemini) na barra do topo para usar esta ferramenta.</div>';return;}
+  if(!API.ready){document.getElementById(outId).innerHTML='<div class="needconn">O servidor ainda não tem a chave configurada. Defina os secrets no Supabase (ANTHROPIC_API_KEY / GEMINI_API_KEY) e clique em Recarregar modelos.</div>';return;}
   var out=document.getElementById(outId),btn=document.getElementById(btnId);btn.disabled=true;
   out.innerHTML='<div class="loading"><span class="spin"></span>Gerando com a IA...</div>';
   try{var txt=await ask(prompt,mt);out.innerHTML='<div class="mdout">'+md(txt)+'<button class="copybtn" data-full="'+esc(txt)+'" onclick="copiarTxt(this)">Copiar tudo</button></div>';}
@@ -357,13 +341,13 @@ function gerarComando(){
   out.innerHTML='<div class="mdout"><h3>Comando pronto para o Cowork</h3><p>Copie e cole no seu chat do Cowork com o Curador. Eu faço a análise ao vivo no Instagram.</p><div style="background:#161616;border:1px solid #333;border-radius:12px;padding:14px 16px;white-space:pre-wrap;font-family:monospace;font-size:12.5px;color:#e9dfce;margin-top:8px">'+esc(cmd)+'</div><button class="copybtn" data-full="'+esc(cmd)+'" onclick="copiarTxt(this)">Copiar comando</button> <a class="copybtn" style="text-decoration:none;display:inline-block" href="https://claude.ai" target="_blank" rel="noopener">Abrir Claude / Cowork</a></div>';
 }
 
-/* ===== init: restaura chave + tema, auto-conecta ===== */
+/* ===== init: restaura tema/provedor, carrega modelos do backend ===== */
 (function(){
   try{var tm=localStorage.getItem('curador_tema');if(tm)document.getElementById('temaCentral').value=tm;}catch(e){}
-  try{var k=localStorage.getItem('curador_key'),prov=localStorage.getItem('curador_provider')||'claude';document.getElementById('provider').value=prov;if(k){document.getElementById('apiKey').value=k;connectClaude();}}catch(e){}
+  try{var prov=localStorage.getItem('curador_provider')||'claude';document.getElementById('provider').value=prov;}catch(e){}
+  document.getElementById('provider').addEventListener('change',loadModels);
   var ms=document.getElementById('modelSel');if(ms)ms.addEventListener('change',function(){try{localStorage.setItem('curador_model',ms.value);}catch(e){}});
-  var fk=document.getElementById('forgetKey');if(fk)fk.addEventListener('click',function(ev){ev.preventDefault();try{localStorage.removeItem('curador_key');localStorage.removeItem('curador_provider');localStorage.removeItem('curador_model');}catch(e){}var st=document.getElementById('connStatus');st.textContent='● Chave esquecida';st.className='cst';document.getElementById('apiKey').value='';API.ready=false;});
-  document.getElementById('apiKey').addEventListener('keydown',function(ev){if(ev.key==='Enter')connectClaude();});
+  loadModels();
 })();
 </script>
 </body>
