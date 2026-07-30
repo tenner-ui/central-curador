@@ -251,10 +251,10 @@
       <option value="avatar">Vídeo · Avatar falante</option>
       <option value="slideshow">Vídeo · Slideshow narrado</option>
     </select>
-    <button class="go" id="btnPub" onclick="gerarPacote()">📦 Gerar pacote</button>
+    <button class="go" id="btnPost" onclick="gerarPacote()">📦 Gerar pacote</button>
   </div>
   <p class="sub" style="margin:8px 0 0;font-size:12.5px;opacity:.85">O BestContent não tem API oficial, então o fluxo é: gerar aqui → copiar/baixar → subir no BestContent. Rápido e sem travar sua conta.</p>
-  <div class="outwrap" id="outPub"></div>
+  <div class="outwrap" id="outPost"></div>
 </div></section>
 
 <section class="tabpane" id="tab-referencia"><div class="tool">
@@ -536,11 +536,11 @@ function pacoteHTML(t,cap,mediaHtml){
     +'</div>';
 }
 async function gerarPacote(){
-  if(needTema('outPub'))return;
-  if(!API.ready){document.getElementById('outPub').innerHTML='<div class="needconn">O servidor ainda nao tem a chave configurada. Clique em Recarregar modelos.</div>';return;}
+  if(needTema('outPost'))return;
+  if(!API.ready){document.getElementById('outPost').innerHTML='<div class="needconn">O servidor ainda nao tem a chave configurada. Clique em Recarregar modelos.</div>';return;}
   var tipo=document.getElementById('pubMidia').value;
   var t=getTema();
-  var btn=document.getElementById('btnPub'),out=document.getElementById('outPub');
+  var btn=document.getElementById('btnPost'),out=document.getElementById('outPost');
   btn.disabled=true;
   try{
     out.innerHTML=loading('1/2 - Escrevendo a legenda e as hashtags...');
