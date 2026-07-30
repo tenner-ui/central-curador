@@ -146,6 +146,7 @@
   <button data-tab="evidencias" onclick="switchTab(this)">🔬 Evidências (PubMed)</button>
   <button data-tab="imagem" onclick="switchTab(this)">🎨 Direção de Arte</button>
   <button data-tab="video" onclick="switchTab(this)">🎬 Vídeo (IA)</button>
+  <button data-tab="publicacao" onclick="switchTab(this)">📤 Publicação</button>
   <button data-tab="referencia" onclick="switchTab(this)">🔎 Analisar Referência</button>
   <button data-tab="estudo" onclick="switchTab(this)">📚 Estudo (HormoneLab)</button>
   <button data-tab="mais" onclick="switchTab(this)">➕ Mais integrações</button>
@@ -238,6 +239,23 @@
   </div>
   <p class="sub" style="margin:8px 0 0;font-size:12.5px;opacity:.85">⏱ Vídeo leva de 1 a 4 min e tem custo por geração na sua conta. <b>Veo</b> = clipe artístico com áudio; <b>Avatar</b> = apresentador falando o roteiro; <b>Slideshow</b> = imagens da marca + narração em voz PT-BR + legendas.</p>
   <div class="outwrap" id="outVideo"></div>
+</div></section>
+
+<section class="tabpane" id="tab-publicacao"><div class="tool">
+  <div class="tk">IA · usa o tema central</div><h3>📤 Pacote de Publicação (BestContent)</h3>
+  <p class="sub">Gera o post pronto para avaliar e publicar: <b>legenda + hashtags</b> e a <b>mídia</b> (imagem, carrossel ou vídeo). Depois é só levar pro BestContent (Criar / Biblioteca).</p>
+  <div class="selrow">
+    <select id="pubMidia">
+      <option value="carrossel">Carrossel (4 imagens)</option>
+      <option value="imagem">Imagem única</option>
+      <option value="veo">Vídeo · Clipe IA (Veo)</option>
+      <option value="avatar">Vídeo · Avatar falante</option>
+      <option value="slideshow">Vídeo · Slideshow narrado</option>
+    </select>
+    <button class="go" id="btnPub" onclick="gerarPacote()">📦 Gerar pacote</button>
+  </div>
+  <p class="sub" style="margin:8px 0 0;font-size:12.5px;opacity:.85">O BestContent não tem API oficial, então o fluxo é: gerar aqui → copiar/baixar → subir no BestContent. Rápido e sem travar sua conta.</p>
+  <div class="outwrap" id="outPub"></div>
 </div></section>
 
 <section class="tabpane" id="tab-referencia"><div class="tool">
@@ -475,6 +493,82 @@ async function gerarVideo(){
       showVideo(out,url3,fnameFrom(t,'-slideshow'));
     }
   }catch(err){out.innerHTML='<div class="errbox"><b>Erro:</b> '+esc(err.message)+'</div>';}
+  finally{btn.disabled=false;}
+}
+function loading(msg){return '<div class="loading"><span class="spin"></span>'+msg+'</div>';}
+async function gerarVideoURL(modo,t,aspect,out){
+  if(modo==='veo'){
+    out.innerHTML=loading('Escrevendo a cena do video...');
+    var vp=await ask('Escreva um PROMPT de video em INGLES (uma cena de ~8 segundos) para um Reel do Instituto Vitality sobre "'+t+'". Estilo: cinematic, premium, deep emerald-green and gold brand palette, editorial clinical, subtle molecular motifs, elegant, soft lighting. Sem texto na tela, sem logos. Descreva camera, movimento e ambiente. Responda APENAS com o prompt.',400);
+    out.innerHTML=loading('Gerando o clipe (Veo)... 1 a 3 min');
+    var s=await callBackend({action:'video_start',prompt:vp,aspect:aspect});
+    if(s.error)throw new Error(s.error);
+    return await pollVideo('video_poll','operation',s.operation,out,'Renderizando o clipe (Veo)',30);
+  }else if(modo==='avatar'){
+    out.innerHTML=loading('Escrevendo o roteiro falado...');
+    var rot=await ask('Escreva um ROTEIRO FALADO curto (45 a 70 palavras, ~30s) para um video com apresentador sobre "'+t+'", em portugues do Brasil, tom educativo e caloroso. Fala corrida, sem marcacoes, sem hashtags, sem emojis. Comece com um gancho forte. Respeite molecula (nao marca) e individualizacao. Responda APENAS com a fala.',500);
+    out.innerHTML=loading('Gerando o avatar (HeyGen)... 1 a 4 min');
+    var s2=await callBackend({action:'avatar_start',roteiro:rot,ratio:(aspect==='16:9'?'16:9':'9:16'),titulo:('Curador - '+t).slice(0,70)});
+    if(s2.error)throw new Error(s2.error);
+    return await pollVideo('avatar_poll','video_id',s2.video_id,out,'Renderizando o avatar',40);
+  }else{
+    out.innerHTML=loading('Planejando as cenas e a narracao...');
+    var pj=await ask('Planeje um VIDEO-SLIDESHOW de 4 cenas sobre "'+t+'". Responda APENAS JSON valido: {"cenas":[{"narration":"frase curta falada em portugues, max 22 palavras","visual":"english scene description for the image"}]}. Educativo, sem cliche, sem marca de medicamento.',2500);
+    var clean=pj.replace(/```json/gi,'').replace(/```/g,'').trim();var a0=clean.indexOf('{'),a1=clean.lastIndexOf('}');if(a0>=0&&a1>a0)clean=clean.slice(a0,a1+1);
+    var cenas=(JSON.parse(clean).cenas)||[];
+    if(!cenas.length)throw new Error('Nao consegui planejar as cenas.');
+    var scenes=[];
+    for(var i=0;i<cenas.length;i++){
+      out.innerHTML=loading('Gerando imagem da cena '+(i+1)+'/'+cenas.length+'...');
+      var img=await askImage('Instagram vertical 9:16 video frame, '+brandBase()+' Scene: '+(cenas[i].visual||'')+'. No on-image text.');
+      var up=await callBackend({action:'upload_image',b64:img.image,mime:img.mime});
+      if(up.error)throw new Error(up.error);
+      scenes.push({url:up.url,narration:cenas[i].narration||''});
+    }
+    out.innerHTML=loading('Montando o video narrado... 1 a 3 min');
+    var s3=await callBackend({action:'slideshow_start',scenes:scenes,aspect:aspect});
+    if(s3.error)throw new Error(s3.error);
+    return await pollVideo('slideshow_poll','project',s3.project,out,'Renderizando o video narrado',45);
+  }
+}
+function copyPub(){var x=document.getElementById('pubCap');if(!x)return;x.select();try{document.execCommand('copy');}catch(e){}if(navigator.clipboard){navigator.clipboard.writeText(x.value);}var b=document.getElementById('btnCopyPub');if(b){var o=b.textContent;b.textContent='Copiado!';setTimeout(function(){b.textContent=o;},1500);}}
+function pacoteHTML(t,cap,mediaHtml){
+  var steps='### Como publicar no BestContent'+String.fromCharCode(10)+'1. Clique em **Abrir BestContent** e va em **Criar** ou **Biblioteca**.'+String.fromCharCode(10)+'2. **Baixe** a midia acima e faca upload la (ou cole o texto da legenda).'+String.fromCharCode(10)+'3. Ajuste, agende no **Calendario** e envie para avaliacao/publicacao.';
+  return '<div class="imgout">'
+    +'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px"><b>📦 Pacote de publicacao</b> <span class="tk">'+esc(t)+'</span></div>'
+    +'<label class="sub" style="font-weight:600;display:block;margin-bottom:4px">Legenda + hashtags</label>'
+    +'<textarea id="pubCap" style="width:100%;min-height:170px;background:#0d0d0d;color:#eee;border:1px solid #333;border-radius:10px;padding:10px;font:inherit;box-sizing:border-box">'+esc(cap)+'</textarea>'
+    +'<div class="imgbar"><button class="go" id="btnCopyPub" onclick="copyPub()">Copiar legenda</button><a class="go alt" href="https://social.bestcontent.ai/criar" target="_blank" rel="noopener">Abrir BestContent</a><button class="go alt" onclick="gerarPacote()">Gerar outro</button></div>'
+    +'<div style="margin-top:14px;text-align:center">'+mediaHtml+'</div>'
+    +'<div class="mdout" style="margin-top:12px">'+md(steps)+'</div>'
+    +'</div>';
+}
+async function gerarPacote(){
+  if(needTema('outPub'))return;
+  if(!API.ready){document.getElementById('outPub').innerHTML='<div class="needconn">O servidor ainda nao tem a chave configurada. Clique em Recarregar modelos.</div>';return;}
+  var tipo=document.getElementById('pubMidia').value;
+  var t=getTema();
+  var btn=document.getElementById('btnPub'),out=document.getElementById('outPub');
+  btn.disabled=true;
+  try{
+    out.innerHTML=loading('1/2 - Escrevendo a legenda e as hashtags...');
+    var cap=await ask('Escreva a LEGENDA de um post de Instagram do Instituto Vitality (Dr. Tenner Nunes) sobre "'+t+'", em portugues do Brasil. Estrutura: 1) gancho forte na primeira linha; 2) 3 a 5 linhas de conteudo educativo, com uma quebra de linha entre as ideias; 3) uma chamada suave para agendar avaliacao/consulta. Regras: medicamento pela molecula (nunca marca), reforce individualizacao e acompanhamento medico, sem promessas milagrosas, no maximo 2 ou 3 emojis. Ao final, uma linha em branco e de 8 a 12 hashtags relevantes em portugues, todas numa unica linha. Responda apenas com a legenda pronta.',900);
+    cap=(cap||'').trim();
+    var mediaHtml='';
+    if(tipo==='carrossel'||tipo==='imagem'){
+      var nn=tipo==='carrossel'?4:1;var imgs=[];
+      for(var i=0;i<nn;i++){
+        out.innerHTML=loading('2/2 - Gerando imagem '+(i+1)+'/'+nn+'...');
+        var im=await askImage('Instagram 9:16 vertical, '+brandBase()+' Tema: '+t+(nn>1?(' - slide '+(i+1)+' de '+nn):'')+'. Minimal, no on-image text.');
+        imgs.push('data:'+(im.mime||'image/png')+';base64,'+im.image);
+      }
+      mediaHtml=imgs.map(function(u,ix){return '<div style="margin:6px 0"><img src="'+u+'" style="width:100%;max-width:300px;border-radius:12px;border:1px solid #333"><br><a class="go alt" style="margin-top:6px;display:inline-block" href="'+u+'" download="'+fnameFrom(t,'-img'+(ix+1))+'.png">Baixar imagem '+(ix+1)+'</a></div>';}).join('');
+    }else{
+      var url=await gerarVideoURL(tipo,t,'9:16',out);
+      mediaHtml='<video src="'+url+'" controls playsinline style="width:100%;max-width:300px;border-radius:12px;border:1px solid #333;background:#000"></video><br><a class="go alt" style="margin-top:6px;display:inline-block" href="'+url+'" download="'+fnameFrom(t,'-video')+'.mp4" target="_blank">Baixar video</a>';
+    }
+    out.innerHTML=pacoteHTML(t,cap,mediaHtml);
+  }catch(e){out.innerHTML='<div class="errbox"><b>Erro:</b> '+esc(e.message)+'</div>';}
   finally{btn.disabled=false;}
 }
 function analisarRef(){
