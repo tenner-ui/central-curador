@@ -148,7 +148,6 @@
   <button data-tab="video" onclick="switchTab(this)">🎬 Vídeo (IA)</button>
   <button data-tab="publicacao" onclick="switchTab(this)">📤 Publicação</button>
   <button data-tab="referencia" onclick="switchTab(this)">🔎 Analisar Referência</button>
-  <button data-tab="estudo" onclick="switchTab(this)">📚 Estudo (HormoneLab)</button>
   <button data-tab="mais" onclick="switchTab(this)">➕ Mais integrações</button>
 </nav>
 
@@ -281,13 +280,6 @@
   <div class="outwrap" id="outRef"></div>
 </div></section>
 
-<section class="tabpane" id="tab-estudo"><div class="tool">
-  <div class="tk">Base de conhecimento · consulta</div><h3>📚 Guia Clínico de Hormônios — HormoneLab</h3>
-  <p class="sub">Referência interna do Dr. Tenner: 38 agentes (GLP-1/GIP, GH e peptídeos, tireoide, SERMs/IA/HCG, endógenos) com molécula 3D, efeitos, colaterais, manejo e monitorização. Use como apoio de estudo ao criar conteúdo — <b>uso educativo/clínico, jamais promocional</b>.</p>
-  <div class="studywrap"><iframe id="estudoFrame" data-src="estudo.html" title="HormoneLab — Guia Clínico de Hormônios" loading="lazy" referrerpolicy="no-referrer"></iframe></div>
-  <p class="sub" style="margin-top:10px">Abrir em tela cheia: <a href="estudo.html" target="_blank" rel="noopener" style="color:#C9A44C">estudo.html ↗</a></p>
-</div></section>
-
 <section class="tabpane" id="tab-mais"><div class="tool">
   <div class="tk">Próxima fase · requer backend</div><h3>➕ Integrações que precisam de um servidor</h3>
   <p class="sub">Estas não rodam numa página estática (usam OAuth/tokens que não podem ficar no navegador). Ficam prontas quando montarmos o app (Vercel/Supabase). O tema central já vai alimentá-las também.</p>
@@ -316,7 +308,7 @@ var LP=[['https://aistudio.google.com/','Google AI'],['https://opal.withgoogle.c
 document.getElementById('launchpad').innerHTML='<span class="lplab">Ferramentas de IA:</span>'+LP.map(function(l){return '<a href="'+l[0]+'" target="_blank" rel="noopener">'+l[1]+'</a>';}).join('');
 
 /* ===== tabs / tema / dicas ===== */
-function switchTab(btn){document.querySelectorAll('.tabbar button').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');document.querySelectorAll('.tabpane').forEach(function(p){p.classList.remove('active');});document.getElementById('tab-'+btn.getAttribute('data-tab')).classList.add('active');if(btn.getAttribute('data-tab')==='estudo'){var fr=document.getElementById('estudoFrame');if(fr&&!fr.src&&fr.getAttribute('data-src')){fr.src=fr.getAttribute('data-src');}}}
+function switchTab(btn){document.querySelectorAll('.tabbar button').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');document.querySelectorAll('.tabpane').forEach(function(p){p.classList.remove('active');});document.getElementById('tab-'+btn.getAttribute('data-tab')).classList.add('active');}
 function getTema(){return document.getElementById('temaCentral').value.trim();}
 function setTema(el){document.getElementById('temaCentral').value=el.textContent;try{localStorage.setItem('curador_tema',el.textContent);}catch(e){}}
 document.getElementById('temaCentral').addEventListener('input',function(){try{localStorage.setItem('curador_tema',this.value);}catch(e){}});
