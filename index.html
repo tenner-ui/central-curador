@@ -71,6 +71,12 @@
   a.go{text-decoration:none;display:inline-block;}
   .imgout{margin-top:6px;} .imgout img{max-width:100%;border-radius:14px;border:1px solid #333;box-shadow:0 6px 24px rgba(0,0,0,.45);display:block;}
   .imgbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
+  .carhead{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:2px 0 14px;color:#f0e6d2;}
+  .cargrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;}
+  .carcard{background:#0d0d0d;border:1px solid #333;border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:8px;}
+  .carcard img{width:100%;border-radius:10px;display:block;}
+  .carnum{color:var(--gold2);font-family:"Helvetica Neue",Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;}
+  .carcard .go{padding:9px 12px;font-size:13px;text-align:center;}
   .go.alt{background:#1a1a1a;color:#e9dfce;border:1px solid var(--gold);}
   .lbl{color:#e2d8c4;font-size:13px;margin:14px 0 6px;font-family:"Helvetica Neue",Arial,sans-serif;}
   .checkgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:6px;}
@@ -195,7 +201,7 @@
 
 <section class="tabpane" id="tab-imagem"><div class="tool">
   <div class="tk">IA · usa o tema central</div><h3>🎨 Direção de Arte &amp; Imagem</h3>
-  <p class="sub">Gera o conceito visual do post na identidade do Instituto (preto/dourado, editorial) e agora <b>renderiza a imagem de verdade</b> pela IA — pronta para baixar e usar.</p>
+  <p class="sub">Gera o conceito visual do post na identidade da marca (verde + dourado, editorial) e agora <b>renderiza a imagem de verdade</b> pela IA — pronta para baixar e usar.</p>
   <div class="selrow">
     <select id="fmtImg">
       <option value="capa de carrossel (1080x1350)">Capa de carrossel</option>
@@ -204,9 +210,12 @@
     </select>
     <button class="go alt" id="btnImg" onclick="gerarArte()">📝 Direção de arte (texto)</button>
     <button class="go" id="btnImgGen" onclick="gerarImagem()">🖼 Gerar imagem</button>
+    <select id="nSlides" title="Número de slides"><option value="5">5 slides</option><option value="6" selected>6 slides</option><option value="7">7 slides</option><option value="8">8 slides</option></select>
+    <button class="go" id="btnCarrossel" onclick="gerarCarrossel()">🎠 Gerar carrossel completo</button>
   </div>
   <p class="sub" style="margin:6px 0 0;font-size:12.5px;opacity:.8">💡 Dica: o botão <b>Direção de arte</b> te dá o conceito e um prompt refinado; o botão <b>Gerar imagem</b> cria a arte direto. Pra imagem com base num conceito específico, gere o texto primeiro e depois clique em Gerar imagem.</p>
   <div class="outwrap" id="outImgArt"></div>
+  <div class="outwrap" id="outCarrossel"></div>
   <div class="outwrap" id="outImg"></div>
 </div></section>
 
@@ -315,55 +324,74 @@ function needTema(outId){if(!getTema()){document.getElementById(outId).innerHTML
 function avaliarTema(){if(needTema('outAval'))return;var t=getTema();run('outAval','btnAval','Avalie PROFUNDAMENTE este tema para o Instagram do Dr. Tenner Nunes.\n\nTEMA: "'+t+'"\n\nEm Markdown, específico a ESTE tema:\n## Força do tema\nNota 0–100 + frase de veredito.\n## 4 dimensões\nNota + 1 linha cada: Relevância ao nicho; Potencial emocional; Gancho/curiosidade; Originalidade/viral.\n## Riscos de conformidade CFM\nEspecíficos + como contornar.\n## 5 ângulos criativos e originais\n## Plano de publicações\nReel, Carrossel, Story, História real e institucional — cada um com gancho original.',3900);}
 function gerarRoteiro(){if(needTema('outRot'))return;var t=getTema(),f=document.getElementById('formatoRoteiro').value,v=document.getElementById('contaRoteiro').value;run('outRot','btnRot','Crie um ROTEIRO completo, ORIGINAL e com potencial viral.\n\nTEMA: "'+t+'"\nFORMATO: '+f+'\nVOZ: '+v+'\n\nInclua: gancho de 3s inédito; desenvolvimento (uma ideia por trecho); CTA que gera comentário; marcação de tempos/telas (Reel/Story) ou card a card (Carrossel); LEGENDA pronta com nota de individualização e assinatura correta; 6–8 hashtags. Markdown.',3900);}
 function gerarLegendas(){if(needTema('outLeg'))return;var t=getTema(),tom=document.getElementById('tomLeg').value;run('outLeg','btnLeg','Escreva 3 variações de LEGENDA de Instagram sobre "'+t+'", em tom '+tom+'. Cada variação: gancho forte na 1ª linha + corpo curto + CTA que gera comentário (pergunta fácil) + nota de individualização/avaliação médica + assinatura correta. No fim, um bloco com 8 hashtags relevantes. Markdown, separando as 3 variações.',3200);}
-function gerarArte(){if(needTema('outImg'))return;var t=getTema(),f=document.getElementById('fmtImg').value;run('outImg','btnImg','Crie a DIREÇÃO DE ARTE para uma '+f+' sobre "'+t+'", na identidade do Instituto Vitality (fundo preto/escuro, dourado #C9A44C, tipografia serifada elegante, ar editorial clínico premium; opção de foto do Dr. Tenner em P&B). Entregue em Markdown:\n## Conceito visual\n## Composição / layout\n## Paleta e tipografia\n## Texto sugerido na arte (curto)\n## Prompt de imagem (em inglês)\nUm prompt detalhado, pronto para colar no Ideogram, Google Gemini ou Canva para renderizar.',3000);}
+function gerarArte(){if(needTema('outImg'))return;var t=getTema(),f=document.getElementById('fmtImg').value;run('outImg','btnImg','Crie a DIREÇÃO DE ARTE para uma '+f+' sobre "'+t+'", na identidade do Instituto Vitality (fundo VERDE da marca — verde esmeralda/floresta profundo, elegante e clínico —, dourado #C9A44C, tipografia serifada elegante, ar editorial premium; opção de foto do Dr. Tenner). Entregue em Markdown:\n## Conceito visual\n## Composição / layout\n## Paleta e tipografia\n## Texto sugerido na arte (curto)\n## Prompt de imagem (em inglês)\nUm prompt detalhado, pronto para colar no Ideogram, Google Gemini ou Canva para renderizar.',3000);}
+async function askImage(prompt){
+  var d=null;
+  for(var i=0;i<3;i++){
+    var r=await fetch(BACKEND,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'image',prompt:prompt})});
+    d=await r.json();
+    if(d.image)return d;
+    if(d.error&&/demanda|high demand|overloaded|503|UNAVAILABLE|RESOURCE_EXHAUSTED/i.test(d.error)){await new Promise(function(x){setTimeout(x,3500);});continue;}
+    break;
+  }
+  throw new Error((d&&d.error)||'Nao retornou imagem.');
+}
+function fnameFrom(t,suf){return 'curador-'+(String(t).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,36)||'arte')+(suf||'')+'.png';}
+function brandBase(){return 'for a Brazilian metabolic-health medical brand (Instituto Vitality). Visual identity: rich deep emerald-green brand background (the Instituto Vitality signature green, an elegant clinical forest/emerald green), tasteful gold (#C9A44C) accents, refined editorial serif typography, subtle abstract molecular/DNA motif, premium minimalist clinical aesthetic, high-end magazine feel. Tasteful, trustworthy, educational, not salesy; no medication brand names, only a small INSTITUTO VITALITY wordmark at the bottom. Ultra sharp, studio quality, high detail.';}
 async function gerarImagem(){
   if(needTema('outImgArt'))return;
-  if(!API.ready){document.getElementById('outImgArt').innerHTML='<div class=\"needconn\">O servidor ainda não tem a chave configurada. Clique em Recarregar modelos.</div>';return;}
+  if(!API.ready){document.getElementById('outImgArt').innerHTML='<div class="needconn">O servidor ainda nao tem a chave configurada. Clique em Recarregar modelos.</div>';return;}
   var t=getTema(),f=document.getElementById('fmtImg').value;
   var btn=document.getElementById('btnImgGen'),out=document.getElementById('outImgArt');
-  btn.disabled=true;out.innerHTML='<div class=\"loading\"><span class=\"spin\"></span>Renderizando imagem com a IA… (pode levar ~15s)</div>';
-  var prompt='Professional Instagram '+f+' for a Brazilian metabolic-health medical brand (Instituto Vitality). Theme: \"'+t+'\". Visual identity: deep black background, elegant gold (#C9A44C) accents, refined editorial serif typography, premium minimalist clinical aesthetic, subtle abstract molecular/scientific motif, high-end magazine feel, clear focal space for a headline. Tasteful, trustworthy, educational — not salesy; no medication brand names, no logos, no watermark. Ultra sharp, studio quality, high detail.';
-  var d=null;
+  btn.disabled=true;out.innerHTML='<div class="loading"><span class="spin"></span>Renderizando imagem com a IA... (pode levar ~15s)</div>';
+  var prompt='Professional Instagram '+f+' '+brandBase()+' Theme: "'+t+'". Clear focal space for a headline.';
   try{
-    for(var i=0;i<3;i++){
-      var r=await fetch(BACKEND,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'image',prompt:prompt})});
-      d=await r.json();
-      if(d.image)break;
-      if(d.error&&/demanda|high demand|overloaded|503|UNAVAILABLE/i.test(d.error)){out.innerHTML='<div class=\"loading\"><span class=\"spin\"></span>Modelo com alta demanda, tentando de novo… ('+(i+2)+'/3)</div>';await new Promise(function(x){setTimeout(x,3500);});continue;}
-      break;
-    }
-    if(!d||!d.image)throw new Error((d&&d.error)||'Não retornou imagem.');
+    var d=await askImage(prompt);
     var src='data:'+(d.mime||'image/png')+';base64,'+d.image;
-    var fn='curador-'+(t.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40)||'arte')+'.png';
-    out.innerHTML='<div class=\"imgout\"><img src=\"'+src+'\" alt=\"arte gerada pela IA\"><div class=\"imgbar\"><a class=\"go\" href=\"'+src+'\" download=\"'+fn+'\">⬇ Baixar imagem</a><button class=\"go alt\" onclick=\"gerarImagem()\">🔄 Gerar outra</button></div></div>';
-  }catch(err){out.innerHTML='<div class=\"errbox\"><b>Erro:</b> '+esc(err.message)+'</div>';}
+    out.innerHTML='<div class="imgout"><img src="'+src+'" alt="arte gerada pela IA"><div class="imgbar"><a class="go" href="'+src+'" download="'+fnameFrom(t)+'">Baixar imagem</a><button class="go alt" onclick="gerarImagem()">Gerar outra</button></div></div>';
+  }catch(err){out.innerHTML='<div class="errbox"><b>Erro:</b> '+esc(err.message)+'</div>';}
   finally{btn.disabled=false;}
 }
-
-/* ===== PubMed (API real, sem chave) ===== */
-async function buscarPubMed(){
-  if(needTema('outPub'))return;var t=getTema(),out=document.getElementById('outPub'),btn=document.getElementById('btnPub');btn.disabled=true;
-  out.innerHTML='<div class="loading"><span class="spin"></span>Buscando no PubMed...</div>';
+async function gerarCarrossel(){
+  if(needTema('outCarrossel'))return;
+  if(!API.ready){document.getElementById('outCarrossel').innerHTML='<div class="needconn">O servidor ainda nao tem a chave configurada. Clique em Recarregar modelos.</div>';return;}
+  var NL=String.fromCharCode(10);
+  var t=getTema();
+  var n=parseInt(document.getElementById('nSlides').value,10)||6;
+  var btn=document.getElementById('btnCarrossel'),out=document.getElementById('outCarrossel');
+  btn.disabled=true;
+  out.innerHTML='<div class="loading"><span class="spin"></span>1/2 - Planejando o roteiro do carrossel com a IA...</div>';
+  var plano=null;
   try{
-    var q=t;
-    if(API.ready){try{q=(await ask('Converta este tema em uma query curta de busca do PubMed em INGLÊS (só a query, sem aspas, sem explicação): "'+t+'"',80)).trim().replace(/^"|"$/g,'').split('\n')[0]||t;}catch(e){}}
-    var es=await fetch('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&retmax=6&sort=relevance&term='+encodeURIComponent(q));
-    var ed=await es.json();var ids=(ed.esearchresult&&ed.esearchresult.idlist)||[];
-    if(!ids.length){out.innerHTML='<div class="mdout"><p>Nenhum artigo encontrado para <b>'+esc(q)+'</b>. Tente um tema mais específico ou em inglês.</p></div>';btn.disabled=false;return;}
-    var su=await fetch('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id='+ids.join(','));
-    var sd=await su.json(),res=sd.result||{};
-    var h='<div class="mdout"><h3>Evidências (PubMed) · busca: '+esc(q)+'</h3>';
-    ids.forEach(function(id){var a=res[id];if(!a)return;var au=(a.authors||[]).slice(0,3).map(function(x){return x.name;}).join(', ');h+='<div class="refitem"><b>'+esc(a.title||'(sem título)')+'</b><div class="meta">'+esc(au)+(a.source?' · '+esc(a.source):'')+(a.pubdate?' · '+esc(a.pubdate):'')+'</div><a href="https://pubmed.ncbi.nlm.nih.gov/'+id+'/" target="_blank">PMID '+id+' ↗</a></div>';});
-    h+='</div>';out.innerHTML=h;
-    if(API.ready){
-      var syn=document.createElement('div');syn.className='mdout';syn.style.marginTop='16px';syn.innerHTML='<div class="loading" style="border:none;background:none"><span class="spin"></span>Sintetizando uso editorial...</div>';out.appendChild(syn);
-      try{var titles=ids.map(function(id){return res[id]?('- '+res[id].title):'';}).join('\n');var s=await ask('Com base nestes títulos de artigos do PubMed sobre "'+t+'":\n'+titles+'\n\nEscreva, em Markdown, como o Dr. Tenner pode usar essas evidências num post educativo (sem citar dados que não estão nos títulos, sem promessas, dentro do CFM): um parágrafo de enquadramento + 3 pontos-chave comunicáveis com responsabilidade.',1500);syn.innerHTML=md(s);}catch(e){syn.remove();}
-    }
-  }catch(err){out.innerHTML='<div class="errbox"><b>Erro ao consultar o PubMed:</b> '+esc(err.message)+'</div>';}
-  finally{btn.disabled=false;}
+    var pj=await ask('Planeje um CARROSSEL de Instagram de '+n+' slides sobre "'+t+'", original e educativo. Responda APENAS com JSON valido (sem crases, sem texto fora do JSON), neste formato exato: {"slides":[{"titulo":"curto, max 6 palavras","apoio":"frase curta, max 12 palavras","visual":"descricao da cena em ingles para gerar a imagem"}],"legenda":"legenda pronta com nota de individualizacao e assinatura correta","hashtags":"6 a 8 hashtags"}. O slide 1 e a CAPA (gancho forte); o ultimo e CTA que gera comentario. Sem cliches, sem nome de marca de medicamento (use a molecula), tom educativo.',3800);
+    var clean=pj.replace(/```json/gi,'').replace(/```/g,'').trim();
+    var a=clean.indexOf('{'),b=clean.lastIndexOf('}');
+    if(a>=0&&b>a)clean=clean.slice(a,b+1);
+    plano=JSON.parse(clean);
+  }catch(e){out.innerHTML='<div class="errbox"><b>Erro ao planejar:</b> '+esc(e.message)+'. Tente de novo.</div>';btn.disabled=false;return;}
+  var slides=(plano&&plano.slides)||[];
+  if(!slides.length){out.innerHTML='<div class="errbox">A IA nao retornou slides. Tente de novo.</div>';btn.disabled=false;return;}
+  var total=slides.length,imgs=[];
+  for(var i=0;i<total;i++){
+    out.innerHTML='<div class="loading"><span class="spin"></span>2/2 - Gerando slide '+(i+1)+' de '+total+'... (nao feche a aba)</div>';
+    var sl=slides[i];
+    var ptxt='Instagram carousel slide, portrait 4:5 aspect, part of a cohesive set of '+total+' slides '+brandBase()+' This is slide '+(i+1)+' of '+total+'. Large legible on-image text in Brazilian Portuguese: headline "'+(sl.titulo||'')+'"'+(sl.apoio?(', supporting line "'+sl.apoio+'"'):'')+'. Scene: '+(sl.visual||'')+'.';
+    try{var d=await askImage(ptxt);imgs.push({src:'data:'+(d.mime||'image/png')+';base64,'+d.image,fn:fnameFrom(t,'-slide'+(i+1))});}
+    catch(e){imgs.push({err:e.message});}
+  }
+  var html='<div class="carhead"><b>Carrossel: '+total+' slides</b> <button class="go" id="btnBaixarTodas">Baixar todas</button> <button class="go alt" onclick="gerarCarrossel()">Refazer</button></div><div class="cargrid">';
+  for(var j=0;j<imgs.length;j++){
+    if(imgs[j].err){html+='<div class="carcard"><div class="carnum">SLIDE '+(j+1)+'</div><div class="errbox">Falhou: '+esc(imgs[j].err)+'</div><button class="go alt" onclick="gerarCarrossel()">Tentar novamente</button></div>';continue;}
+    html+='<div class="carcard"><div class="carnum">SLIDE '+(j+1)+'</div><img src="'+imgs[j].src+'" alt="slide '+(j+1)+'"><a class="go alt" href="'+imgs[j].src+'" download="'+imgs[j].fn+'">Baixar slide '+(j+1)+'</a></div>';
+  }
+  html+='</div>';
+  if(plano.legenda){var cap='## Legenda'+NL+plano.legenda+(plano.hashtags?(NL+NL+plano.hashtags):'');html+='<div class="mdout" style="margin-top:16px">'+md(cap)+'<button class="copybtn" data-full="'+esc((plano.legenda||'')+NL+NL+(plano.hashtags||''))+'" onclick="copiarTxt(this)">Copiar legenda</button></div>';}
+  out.innerHTML=html;
+  var okimgs=imgs.filter(function(x){return x.src;});
+  var bt=document.getElementById('btnBaixarTodas');
+  if(bt)bt.onclick=function(){okimgs.forEach(function(im,k){setTimeout(function(){var a=document.createElement('a');a.href=im.src;a.download=im.fn;document.body.appendChild(a);a.click();a.remove();},k*600);});};
+  btn.disabled=false;
 }
-
-/* ===== Analisar Referência (independente) ===== */
 function analisarRef(){
   var handle=document.getElementById('refHandle').value.trim(),sample=document.getElementById('refSample').value.trim(),asps=[];
   document.querySelectorAll('.refasp:checked').forEach(function(c){asps.push(c.value);});
