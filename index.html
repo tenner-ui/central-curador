@@ -145,7 +145,7 @@
   <button data-tab="legendas" onclick="switchTab(this)">✍️ Legendas & Hashtags</button>
   <button data-tab="evidencias" onclick="switchTab(this)">🔬 Evidências (PubMed)</button>
   <button data-tab="imagem" onclick="switchTab(this)">🎨 Direção de Arte</button>
-  <button data-tab="video" onclick="switchTab(this)">🎥 Vídeo (IA)</button>
+  <button data-tab="video" onclick="switchTab(this)">🎬 Vídeo (IA)</button>
   <button data-tab="referencia" onclick="switchTab(this)">🔎 Analisar Referência</button>
   <button data-tab="estudo" onclick="switchTab(this)">📚 Estudo (HormoneLab)</button>
   <button data-tab="mais" onclick="switchTab(this)">➕ Mais integrações</button>
@@ -221,16 +221,22 @@
 </div></section>
 
 <section class="tabpane" id="tab-video"><div class="tool">
-  <div class="tk">IA · usa o tema central</div><h3>🎥 Vídeo com IA (Veo)</h3>
-  <p class="sub">Gera um clipe curto (~8s) sobre o tema central na identidade da marca (verde + dourado) — ótimo como gancho de Reel/Story. O Claude roteiriza a cena e o Veo renderiza. <b>Leva 1–3 min</b> e tem custo maior que a imagem.</p>
+  <div class="tk">IA · usa o tema central</div><h3>🎬 Gerador de Vídeos</h3>
+  <p class="sub">Cria um vídeo sobre o tema central em 3 modos. Sai pronto para baixar (9:16 para Reels/Stories), na identidade da marca.</p>
   <div class="selrow">
+    <select id="vidModo">
+      <option value="veo">Clipe IA (Veo) · cena ~8s</option>
+      <option value="avatar">Avatar falante (HeyGen)</option>
+      <option value="slideshow">Slideshow narrado (imagens + voz)</option>
+    </select>
     <select id="vidAspect">
-      <option value="9:16">Vertical 9:16 (Reels/Story)</option>
-      <option value="16:9">Horizontal 16:9</option>
+      <option value="9:16">Vertical 9:16 (Reels/Stories)</option>
       <option value="1:1">Quadrado 1:1</option>
+      <option value="16:9">Horizontal 16:9</option>
     </select>
     <button class="go" id="btnVideo" onclick="gerarVideo()">🎬 Gerar vídeo</button>
   </div>
+  <p class="sub" style="margin:8px 0 0;font-size:12.5px;opacity:.85">⏱ Vídeo leva de 1 a 4 min e tem custo por geração na sua conta. <b>Veo</b> = clipe artístico com áudio; <b>Avatar</b> = apresentador falando o roteiro; <b>Slideshow</b> = imagens da marca + narração em voz PT-BR + legendas.</p>
   <div class="outwrap" id="outVideo"></div>
 </div></section>
 
@@ -407,44 +413,69 @@ async function gerarCarrossel(){
   if(bt)bt.onclick=function(){okimgs.forEach(function(im,k){setTimeout(function(){var a=document.createElement('a');a.href=im.src;a.download=im.fn;document.body.appendChild(a);a.click();a.remove();},k*600);});};
   btn.disabled=false;
 }
+async function callBackend(payload){var r=await fetch(BACKEND,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});return await r.json();}
+async function pollVideo(action,idKey,idVal,out,label,maxTries){
+  for(var i=0;i<maxTries;i++){
+    await new Promise(function(x){setTimeout(x,9000);});
+    var p={action:action};p[idKey]=idVal;
+    var d=await callBackend(p);
+    if(d.done){if(d.error)throw new Error(d.error);return d.url;}
+    if(d.error)throw new Error(d.error);
+    out.innerHTML='<div class="loading"><span class="spin"></span>'+label+' (processando '+(i+1)+'/'+maxTries+')...</div>';
+  }
+  throw new Error('Tempo esgotado. O video pode ainda estar processando - tente de novo em alguns minutos.');
+}
+function showVideo(out,url,fn){
+  out.innerHTML='<div class="imgout"><video src="'+url+'" controls playsinline style="width:100%;max-height:70vh;border-radius:14px;border:1px solid #333;background:#000"></video><div class="imgbar"><a class="go" href="'+url+'" download="'+fn+'" target="_blank">Baixar video</a><button class="go alt" onclick="gerarVideo()">Gerar outro</button></div></div>';
+}
 async function gerarVideo(){
   if(needTema('outVideo'))return;
   if(!API.ready){document.getElementById('outVideo').innerHTML='<div class="needconn">O servidor ainda nao tem a chave configurada. Clique em Recarregar modelos.</div>';return;}
-  var t=getTema();
+  var modo=document.getElementById('vidModo').value;
   var aspect=document.getElementById('vidAspect').value;
+  var t=getTema();
   var btn=document.getElementById('btnVideo'),out=document.getElementById('outVideo');
   btn.disabled=true;
-  out.innerHTML='<div class="loading"><span class="spin"></span>1/3 - Roteirizando a cena do video com a IA...</div>';
-  var vprompt='';
   try{
-    vprompt=await ask('Escreva UM prompt de video em INGLES (uma frase rica e visual, sem aspas), para um clipe vertical de ~8s de Instagram sobre "'+t+'", na identidade do Instituto Vitality: fundo verde esmeralda profundo, detalhes dourados, estetica editorial clinica premium, camera suave. Cena concreta e elegante, sem texto na tela, sem pessoas identificaveis. Responda apenas com o prompt.',400);
-    vprompt=(vprompt||'').replace(/\s+/g,' ').trim().slice(0,600);
-  }catch(e){}
-  if(!vprompt)vprompt='Cinematic vertical clip for a metabolic-health medical brand. Deep emerald-green editorial background with gold accents, subtle abstract molecule of golden light, calm premium clinical mood, soft camera push-in. Theme: '+t+'. No on-screen text.';
-  var op=null;
-  try{
-    var r=await fetch(BACKEND,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'video_start',aspect:aspect,prompt:vprompt})});
-    var d=await r.json();
-    if(d.error||!d.operation)throw new Error(d.error||'Falha ao iniciar');
-    op=d.operation;
-  }catch(e){out.innerHTML='<div class="errbox"><b>Erro ao iniciar:</b> '+esc(e.message)+'</div>';btn.disabled=false;return;}
-  var t0=Date.now();
-  for(var i=0;i<48;i++){
-    await new Promise(function(x){setTimeout(x,10000);});
-    var el=Math.round((Date.now()-t0)/1000);
-    out.innerHTML='<div class="loading"><span class="spin"></span>2/3 - Gerando o video com o Veo... ('+el+'s - pode levar 1 a 3 min, nao feche a aba)</div>';
-    try{
-      var pr=await fetch(BACKEND,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'video_poll',operation:op})});
-      var pd=await pr.json();
-      if(pd.done){
-        if(pd.url){out.innerHTML='<div class="imgout"><video src="'+pd.url+'" controls playsinline style="width:100%;max-width:420px;border-radius:14px;border:1px solid #333;display:block;"></video><div class="imgbar"><a class="go" href="'+pd.url+'" download>Baixar video</a><button class="go alt" onclick="gerarVideo()">Gerar outro</button></div><p class="sub" style="margin-top:8px;font-size:12px;opacity:.8">Cena: '+esc(vprompt)+'</p></div>';}
-        else{out.innerHTML='<div class="errbox"><b>Erro:</b> '+esc(pd.error||'sem video')+'</div>';}
-        btn.disabled=false;return;
+    if(modo==='veo'){
+      out.innerHTML='<div class="loading"><span class="spin"></span>1/2 - Escrevendo a cena do video...</div>';
+      var vp=await ask('Escreva um PROMPT de video em INGLES (uma cena de ~8 segundos) para um Reel do Instituto Vitality sobre "'+t+'". Estilo: cinematic, premium, deep emerald-green and gold brand palette, editorial clinical, subtle molecular motifs, elegant, soft lighting. Sem texto na tela, sem logos. Descreva camera, movimento e ambiente. Responda APENAS com o prompt, sem aspas e sem explicacao.',400);
+      out.innerHTML='<div class="loading"><span class="spin"></span>2/2 - Gerando o video com Veo... (1 a 3 min, nao feche a aba)</div>';
+      var s=await callBackend({action:'video_start',prompt:vp,aspect:aspect});
+      if(s.error)throw new Error(s.error);
+      var url=await pollVideo('video_poll','operation',s.operation,out,'Renderizando o clipe (Veo)',30);
+      showVideo(out,url,fnameFrom(t,'-veo'));
+    }else if(modo==='avatar'){
+      out.innerHTML='<div class="loading"><span class="spin"></span>1/2 - Escrevendo o roteiro falado...</div>';
+      var rot=await ask('Escreva um ROTEIRO FALADO curto (45 a 70 palavras, cerca de 30s) para um video com apresentador sobre "'+t+'", em portugues do Brasil, tom educativo e caloroso. Uma fala corrida, sem marcacoes de cena, sem hashtags, sem emojis. Comece com um gancho forte. Respeite: medicamento pela molecula (nunca marca) e individualizacao/avaliacao medica. Responda APENAS com a fala.',500);
+      out.innerHTML='<div class="loading"><span class="spin"></span>2/2 - Gerando o video com avatar (HeyGen)... (1 a 4 min)</div>';
+      var s2=await callBackend({action:'avatar_start',roteiro:rot,ratio:(aspect==='16:9'?'16:9':'9:16'),titulo:('Curador - '+t).slice(0,70)});
+      if(s2.error)throw new Error(s2.error);
+      var url2=await pollVideo('avatar_poll','video_id',s2.video_id,out,'Renderizando o avatar (HeyGen)',40);
+      showVideo(out,url2,fnameFrom(t,'-avatar'));
+    }else{
+      var n=4;
+      out.innerHTML='<div class="loading"><span class="spin"></span>1/3 - Planejando as cenas e a narracao...</div>';
+      var pj=await ask('Planeje um VIDEO-SLIDESHOW de '+n+' cenas sobre "'+t+'". Responda APENAS com JSON valido: {"cenas":[{"narration":"frase curta falada em portugues, max 22 palavras","visual":"english scene description for the image"}]}. Educativo, sem cliche, sem marca de medicamento (use a molecula).',2500);
+      var clean=pj.replace(/```json/gi,'').replace(/```/g,'').trim();var a0=clean.indexOf('{'),a1=clean.lastIndexOf('}');if(a0>=0&&a1>a0)clean=clean.slice(a0,a1+1);
+      var plano=JSON.parse(clean);var cenas=plano.cenas||[];
+      if(!cenas.length)throw new Error('Nao consegui planejar as cenas. Tente de novo.');
+      var scenes=[];
+      for(var i=0;i<cenas.length;i++){
+        out.innerHTML='<div class="loading"><span class="spin"></span>2/3 - Gerando imagem da cena '+(i+1)+'/'+cenas.length+'...</div>';
+        var img=await askImage('Instagram vertical 9:16 video frame, '+brandBase()+' Scene: '+(cenas[i].visual||'')+'. No on-image text.');
+        var up=await callBackend({action:'upload_image',b64:img.image,mime:img.mime});
+        if(up.error)throw new Error(up.error);
+        scenes.push({url:up.url,narration:cenas[i].narration||''});
       }
-    }catch(e){}
-  }
-  out.innerHTML='<div class="errbox">O video esta demorando mais que o esperado. Ele pode ainda estar processando - tente Gerar de novo em instantes.</div>';
-  btn.disabled=false;
+      out.innerHTML='<div class="loading"><span class="spin"></span>3/3 - Montando o video narrado... (1 a 3 min)</div>';
+      var s3=await callBackend({action:'slideshow_start',scenes:scenes,aspect:aspect});
+      if(s3.error)throw new Error(s3.error);
+      var url3=await pollVideo('slideshow_poll','project',s3.project,out,'Renderizando o video narrado',45);
+      showVideo(out,url3,fnameFrom(t,'-slideshow'));
+    }
+  }catch(err){out.innerHTML='<div class="errbox"><b>Erro:</b> '+esc(err.message)+'</div>';}
+  finally{btn.disabled=false;}
 }
 function analisarRef(){
   var handle=document.getElementById('refHandle').value.trim(),sample=document.getElementById('refSample').value.trim(),asps=[];
