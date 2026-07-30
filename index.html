@@ -268,8 +268,9 @@ async function loadModels(){
     var r=await fetch(BACKEND,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'models',provider:prov})});
     var d=await r.json();if(d.error){throw new Error(d.error);}
     sel.innerHTML='';(d.models||[]).forEach(function(m){var o=document.createElement('option');o.value=m;o.textContent=m;sel.appendChild(o);});
-    if(!sel.options.length){var o=document.createElement('option');o.value=(prov==='gemini'?'gemini-1.5-flash':'claude-sonnet-4-20250514');o.textContent=o.value;sel.appendChild(o);}
-    var pf=-1,rx=(prov==='gemini'?/flash/i:/sonnet/i);for(var i=0;i<sel.options.length;i++){if(rx.test(sel.options[i].value)){pf=i;break;}}sel.selectedIndex=pf>=0?pf:0;
+    if(!sel.options.length){var o=document.createElement('option');o.value=(prov==='gemini'?'gemini-flash-latest':'claude-sonnet-5');o.textContent=o.value;sel.appendChild(o);}
+    var pf=-1;if(d.default){for(var k=0;k<sel.options.length;k++){if(sel.options[k].value===d.default){pf=k;break;}}}
+    if(pf<0){var rx=(prov==='gemini'?/flash/i:/sonnet/i);for(var i=0;i<sel.options.length;i++){if(rx.test(sel.options[i].value)){pf=i;break;}}}sel.selectedIndex=pf>=0?pf:0;
     try{var sm=localStorage.getItem('curador_model');if(sm){for(var j=0;j<sel.options.length;j++){if(sel.options[j].value===sm){sel.selectedIndex=j;break;}}}}catch(e){}
     sel.style.display='';API.ready=true;st.textContent='✓ Backend conectado ('+(prov==='claude'?'Claude':'Gemini')+')';st.className='cst ok';
     try{localStorage.setItem('curador_provider',prov);}catch(e){}
