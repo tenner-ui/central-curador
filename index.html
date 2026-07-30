@@ -5,102 +5,95 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Central do Curador · Dr. Tenner Nunes</title>
 <style>
-  :root{--red:#141414;--red2:#1f1f1f;--dark:#0a0a0a;--gold:#C9A44C;--gold2:#E7C36B;--cream:#F7F3EC;--ink:#2b2620;--muted:#6f665a;--line:#e8d6cf;--bad:#b0453a;}
+  :root{--dark:#0a0a0a;--panel:#141414;--panel2:#1f1f1f;--gold:#C9A44C;--gold2:#E7C36B;--cream:#F7F3EC;--ink:#2b2620;--muted:#6f665a;--line:#e8d6cf;}
   *{box-sizing:border-box;}
   body{margin:0;background:var(--cream);color:var(--ink);font-family:"Georgia",serif;line-height:1.6;-webkit-font-smoothing:antialiased;}
   .wrap{max-width:980px;margin:0 auto;padding:0 22px 90px;}
+  a{color:#8a5a12;}
 
-  /* ===== HERO ===== */
-  header.hero{position:relative;overflow:hidden;background:var(--dark);border-bottom:4px solid var(--gold);min-height:440px;display:flex;align-items:center;}
+  header.hero{position:relative;overflow:hidden;background:var(--dark);border-bottom:4px solid var(--gold);min-height:430px;display:flex;align-items:center;}
   header.hero::before{content:'';position:absolute;inset:0;background:url("data:image/jpeg;base64,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") right center/cover no-repeat;}
   header.hero::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,8,8,.97) 0%,rgba(18,18,18,.9) 34%,rgba(18,18,18,.5) 66%,rgba(8,8,8,.66) 100%);}
-  .hero-content{position:relative;z-index:2;max-width:640px;padding:46px 22px 46px 40px;margin:0 auto 0 max(0px,calc(50% - 490px));}
-  .brandmark{width:58px;height:58px;border:2px solid var(--gold);border-radius:14px;display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:22px;font-weight:700;font-family:"Georgia",serif;letter-spacing:1px;margin-bottom:16px;background:rgba(0,0,0,.2);}
+  .hero-content{position:relative;z-index:2;max-width:640px;padding:44px 22px 44px 40px;margin:0 auto 0 max(0px,calc(50% - 490px));}
+  .brandmark{width:56px;height:56px;border:2px solid var(--gold);border-radius:14px;display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:21px;font-weight:700;font-family:"Georgia",serif;letter-spacing:1px;margin-bottom:15px;background:rgba(0,0,0,.2);}
   .hero .kicker{letter-spacing:.28em;font-size:11px;text-transform:uppercase;color:var(--gold2);font-family:"Helvetica Neue",Arial,sans-serif;font-weight:700;}
-  .hero h1{font-size:40px;margin:10px 0 6px;color:#fff;font-weight:600;line-height:1.1;text-shadow:0 2px 18px rgba(0,0,0,.5);}
-  .hero .title{color:#f0d9c0;font-size:15px;font-family:"Helvetica Neue",Arial,sans-serif;font-weight:500;}
-  .hero .tagline{color:#f7ede0;font-size:16.5px;margin:14px 0 20px;max-width:440px;text-shadow:0 1px 10px rgba(0,0,0,.5);}
-  .socials{display:flex;gap:10px;flex-wrap:wrap;}
-  .socials a{display:inline-flex;align-items:center;gap:8px;padding:9px 15px;border-radius:30px;background:rgba(0,0,0,.5);border:1px solid var(--gold);color:var(--gold2);text-decoration:none;font-family:"Helvetica Neue",Arial,sans-serif;font-size:13px;font-weight:600;backdrop-filter:blur(3px);transition:all .16s;}
+  .hero h1{font-size:38px;margin:10px 0 6px;color:#fff;font-weight:600;line-height:1.1;text-shadow:0 2px 18px rgba(0,0,0,.5);}
+  .hero .title{color:#f0d9c0;font-size:14.5px;font-family:"Helvetica Neue",Arial,sans-serif;font-weight:500;}
+  .hero .tagline{color:#f7ede0;font-size:16px;margin:12px 0 18px;max-width:440px;text-shadow:0 1px 10px rgba(0,0,0,.5);}
+  .socials{display:flex;gap:9px;flex-wrap:wrap;}
+  .socials a{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:30px;background:rgba(0,0,0,.5);border:1px solid var(--gold);color:var(--gold2);text-decoration:none;font-family:"Helvetica Neue",Arial,sans-serif;font-size:12.5px;font-weight:600;backdrop-filter:blur(3px);transition:all .16s;}
   .socials a:hover{background:var(--gold);color:#2a1207;transform:translateY(-2px);}
-  .socials a svg{width:15px;height:15px;fill:currentColor;}
+  .socials svg{width:14px;height:14px;fill:currentColor;}
+  .launchpad{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:13px;}
+  .launchpad .lplab{color:#e2d8c4;font-family:"Helvetica Neue",Arial,sans-serif;font-size:12px;font-weight:700;}
+  .launchpad a{display:inline-flex;padding:6px 12px;border-radius:20px;background:rgba(0,0,0,.5);border:1px solid #454545;color:#e9dfce;text-decoration:none;font-family:"Helvetica Neue",Arial,sans-serif;font-size:12px;font-weight:600;transition:all .15s;}
+  .launchpad a:hover{border-color:var(--gold);color:#fff;}
 
-  /* ===== connection bar ===== */
-  .connbar{position:sticky;top:0;z-index:30;background:var(--dark);border-bottom:1px solid #333333;display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:11px 18px;font-family:"Helvetica Neue",Arial,sans-serif;}
+  .connbar{position:sticky;top:0;z-index:31;background:var(--dark);border-bottom:1px solid #333;display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 18px;font-family:"Helvetica Neue",Arial,sans-serif;}
   .connbar .cst{font-size:13px;font-weight:700;color:#9a9a9a;white-space:nowrap;}
   .connbar .cst.ok{color:var(--gold2);}
-  .connbar input,.connbar select{padding:9px 12px;border-radius:9px;border:1px solid #454545;background:#0d0d0d;color:#fff;font-size:13.5px;font-family:inherit;}
-  .connbar input{flex:1;min-width:200px;}
-  .connbar .go{background:var(--gold);color:#2a1207;border:none;border-radius:9px;padding:9px 18px;font-size:13.5px;font-weight:700;cursor:pointer;}
+  .connbar input,.connbar select{padding:8px 12px;border-radius:9px;border:1px solid #454545;background:#0d0d0d;color:#fff;font-size:13.5px;font-family:inherit;}
+  .connbar input{flex:1;min-width:180px;}
+  .connbar .go{background:var(--gold);color:#2a1207;border:none;border-radius:9px;padding:8px 18px;font-size:13.5px;font-weight:700;cursor:pointer;}
   .connbar .go:hover{filter:brightness(1.08);}
   .connbar .cnote{font-size:11.5px;color:#9f958a;}
 
-  /* ===== tips bar ===== */
-  .tipsbar{position:sticky;top:44px;z-index:19;background:linear-gradient(90deg,var(--red),var(--red2));border-bottom:1px solid #333333;color:#f7ede0;padding:9px 18px;font-family:"Helvetica Neue",Arial,sans-serif;font-size:13px;display:flex;align-items:center;gap:10px;}
-  .tipsbar .tlab{color:var(--gold2);font-weight:700;white-space:nowrap;}
-  .tipsbar .ttxt{opacity:.95;}
+  .themebar{position:sticky;top:43px;z-index:30;background:#111;border-bottom:1px solid #333;display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 18px;font-family:"Helvetica Neue",Arial,sans-serif;}
+  .themebar .tlab{color:var(--gold2);font-weight:700;font-size:13px;white-space:nowrap;}
+  .themebar input{flex:1;min-width:220px;padding:9px 14px;border-radius:9px;border:1px solid #454545;background:#161616;color:#fff;font-size:15px;font-family:inherit;}
+  .themebar input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 2px rgba(201,164,76,.25);}
+  .themebar .chip{display:inline-block;background:#0d0d0d;border:1px solid #3a3a3a;color:#cbbfa6;border-radius:20px;padding:4px 10px;cursor:pointer;font-size:11.5px;}
+  .themebar .chip:hover{border-color:var(--gold);color:#fff;}
 
-  /* ===== tabs ===== */
-  .tabbar{position:sticky;top:80px;z-index:18;background:var(--red);border-bottom:1px solid #333333;display:flex;gap:4px;padding:0 14px;overflow-x:auto;}
-  .tabbar button{background:none;border:none;color:#c9bca6;font-family:"Helvetica Neue",Arial,sans-serif;font-size:14px;font-weight:600;padding:15px 16px;cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;}
+  .tipsbar{background:var(--panel);border-bottom:1px solid #333;color:#f7ede0;padding:8px 18px;font-family:"Helvetica Neue",Arial,sans-serif;font-size:12.5px;display:flex;align-items:center;gap:10px;}
+  .tipsbar .tl{color:var(--gold2);font-weight:700;white-space:nowrap;}
+
+  .tabbar{position:sticky;top:98px;z-index:29;background:var(--dark);border-bottom:1px solid #333;display:flex;gap:2px;padding:0 12px;overflow-x:auto;}
+  .tabbar button{background:none;border:none;color:#c9bca6;font-family:"Helvetica Neue",Arial,sans-serif;font-size:13.5px;font-weight:600;padding:14px 13px;cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;}
   .tabbar button:hover{color:#fff;}
   .tabbar button.active{color:#fff;border-bottom-color:var(--gold);}
   .tabpane{display:none;} .tabpane.active{display:block;animation:fade .25s ease;}
   @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
 
-  .tool{background:linear-gradient(155deg,var(--red),#1a1a1a 55%,var(--dark));color:var(--cream);border-radius:18px;padding:28px 30px 32px;margin:28px 0 8px;border:1px solid #333333;box-shadow:0 10px 30px rgba(0,0,0,.4);}
-  .tool .toolkicker{letter-spacing:.24em;font-size:11px;text-transform:uppercase;color:var(--gold2);font-family:"Helvetica Neue",Arial,sans-serif;font-weight:700;}
-  .tool h3{margin:8px 0 4px;font-size:23px;color:#fff;font-weight:600;}
-  .tool .sub{color:#e2d8c4;font-size:14px;margin:0 0 18px;max-width:680px;}
-  .tool .inputrow{display:flex;gap:10px;flex-wrap:wrap;}
-  .tool input[type=text],.tool textarea,.tool select{padding:14px 16px;border-radius:11px;border:1px solid #454545;background:#161616;color:#fff;font-size:16px;font-family:"Helvetica Neue",Arial,sans-serif;}
-  .tool input[type=text]{flex:1;min-width:220px;}
-  .tool textarea{width:100%;min-height:88px;resize:vertical;line-height:1.5;}
-  .tool select{cursor:pointer;font-size:15px;}
+  .tool{background:linear-gradient(155deg,var(--panel),#1a1a1a 55%,var(--dark));color:var(--cream);border-radius:18px;padding:26px 28px 30px;margin:26px 0 8px;border:1px solid #333;box-shadow:0 10px 30px rgba(0,0,0,.4);}
+  .tool .tk{letter-spacing:.22em;font-size:11px;text-transform:uppercase;color:var(--gold2);font-family:"Helvetica Neue",Arial,sans-serif;font-weight:700;}
+  .tool h3{margin:7px 0 4px;font-size:22px;color:#fff;font-weight:600;}
+  .tool .sub{color:#e2d8c4;font-size:14px;margin:0 0 16px;max-width:680px;}
+  .tool select{padding:13px 15px;border-radius:11px;border:1px solid #454545;background:#161616;color:#fff;font-size:15px;font-family:"Helvetica Neue",Arial,sans-serif;cursor:pointer;}
+  .tool textarea{width:100%;min-height:80px;padding:13px 15px;border-radius:11px;border:1px solid #454545;background:#161616;color:#fff;font-size:15px;font-family:"Helvetica Neue",Arial,sans-serif;resize:vertical;}
+  .tool input[type=text]{padding:13px 15px;border-radius:11px;border:1px solid #454545;background:#161616;color:#fff;font-size:16px;font-family:"Helvetica Neue",Arial,sans-serif;flex:1;min-width:220px;}
   .tool ::placeholder{color:#8a8a8a;}
-  .tool input:focus,.tool textarea:focus,.tool select:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 2px rgba(201,164,76,.28);}
-  .tool button.go{background:var(--gold);color:#2a1207;border:none;border-radius:11px;padding:14px 24px;font-size:15px;font-weight:700;cursor:pointer;font-family:"Helvetica Neue",Arial,sans-serif;}
-  .tool button.go:hover{filter:brightness(1.08);}
-  .tool button.go:disabled{opacity:.5;cursor:not-allowed;}
-  .selrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;}
-  .chips{margin-top:12px;font-size:12px;color:#b3a892;font-family:"Helvetica Neue",Arial,sans-serif;}
-  .chip{display:inline-block;background:var(--dark);border:1px solid #3a3a3a;color:#e9dfce;border-radius:20px;padding:4px 11px;margin:6px 6px 0 0;cursor:pointer;font-size:12px;}
-  .chip:hover{border-color:var(--gold);color:#fff;}
+  .tool select:focus,.tool textarea:focus,.tool input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 2px rgba(201,164,76,.25);}
+  .selrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .go{background:var(--gold);color:#2a1207;border:none;border-radius:11px;padding:13px 22px;font-size:15px;font-weight:700;cursor:pointer;font-family:"Helvetica Neue",Arial,sans-serif;}
+  .go:hover{filter:brightness(1.08);} .go:disabled{opacity:.5;cursor:not-allowed;}
+  .go.alt{background:#1a1a1a;color:#e9dfce;border:1px solid var(--gold);}
+  .lbl{color:#e2d8c4;font-size:13px;margin:14px 0 6px;font-family:"Helvetica Neue",Arial,sans-serif;}
   .checkgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:6px;}
-  .checkgrid label{display:flex;align-items:center;gap:9px;background:var(--dark);border:1px solid #3a3a3a;border-radius:10px;padding:11px 13px;font-family:"Helvetica Neue",Arial,sans-serif;font-size:13.5px;color:#e9dfce;cursor:pointer;}
-  .checkgrid label:hover{border-color:var(--gold);}
-  .checkgrid input{accent-color:var(--gold);width:16px;height:16px;}
-  .lbl{color:#e2d8c4;font-size:13px;margin:16px 0 6px;font-family:"Helvetica Neue",Arial,sans-serif;}
+  .checkgrid label{display:flex;align-items:center;gap:9px;background:var(--dark);border:1px solid #3a3a3a;border-radius:10px;padding:10px 13px;font-family:"Helvetica Neue",Arial,sans-serif;font-size:13.5px;color:#e9dfce;cursor:pointer;}
+  .checkgrid label:hover{border-color:var(--gold);} .checkgrid input{accent-color:var(--gold);width:16px;height:16px;}
 
-  .outwrap{margin-top:24px;}
-  .mdout{background:#fff;color:var(--ink);border-radius:14px;padding:24px 26px;box-shadow:0 2px 12px rgba(0,0,0,.12);}
-  .mdout h3{color:var(--red);font-size:20px;margin:20px 0 8px;} .mdout h3:first-child{margin-top:0;}
-  .mdout h4{color:#9a6b1f;font-size:15px;font-family:"Helvetica Neue",Arial,sans-serif;letter-spacing:.02em;text-transform:uppercase;margin:18px 0 6px;}
-  .mdout p{margin:8px 0;font-size:15.5px;}
-  .mdout ul,.mdout ol{margin:8px 0 8px 4px;padding-left:22px;} .mdout li{margin:5px 0;font-size:15.5px;}
-  .mdout b{color:var(--red);} .mdout hr{border:none;border-top:1px solid var(--line);margin:18px 0;}
+  .outwrap{margin-top:22px;}
+  .mdout{background:#fff;color:var(--ink);border-radius:14px;padding:22px 24px;box-shadow:0 2px 12px rgba(0,0,0,.12);}
+  .mdout h3{color:#1a1a1a;font-size:19px;margin:18px 0 8px;} .mdout h3:first-child{margin-top:0;}
+  .mdout h4{color:#9a6b1f;font-size:14px;font-family:"Helvetica Neue",Arial,sans-serif;letter-spacing:.02em;text-transform:uppercase;margin:16px 0 6px;}
+  .mdout p{margin:8px 0;font-size:15px;} .mdout ul,.mdout ol{margin:8px 0 8px 4px;padding-left:22px;} .mdout li{margin:5px 0;font-size:15px;}
+  .mdout b{color:#1a1a1a;} .mdout hr{border:none;border-top:1px solid var(--line);margin:16px 0;}
   .mdout code{background:#f3ece0;color:#8a5a12;padding:1px 6px;border-radius:5px;font-size:13px;}
-  .copybtn{background:var(--red);color:var(--cream);border:none;border-radius:9px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:"Helvetica Neue",Arial,sans-serif;margin-top:14px;}
-  .copybtn:hover{filter:brightness(1.15);}
-  .loading{background:#161616;border:1px solid #333333;border-radius:14px;padding:26px;color:#e9dfce;font-family:"Helvetica Neue",Arial,sans-serif;font-size:14px;text-align:center;}
+  .refitem{margin:12px 0;border-bottom:1px solid var(--line);padding-bottom:10px;}
+  .refitem b{color:#1a1a1a;font-size:15px;} .refitem .meta{color:var(--muted);font-size:12.5px;font-family:"Helvetica Neue",Arial,sans-serif;}
+  .copybtn{background:#1a1a1a;color:var(--cream);border:none;border-radius:9px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:"Helvetica Neue",Arial,sans-serif;margin-top:14px;}
+  .copybtn:hover{filter:brightness(1.3);}
+  .loading{background:#161616;border:1px solid #333;border-radius:14px;padding:24px;color:#e9dfce;font-family:"Helvetica Neue",Arial,sans-serif;font-size:14px;text-align:center;}
   .spin{display:inline-block;width:18px;height:18px;border:3px solid #3a3a3a;border-top-color:var(--gold);border-radius:50%;animation:sp .8s linear infinite;vertical-align:middle;margin-right:10px;}
   @keyframes sp{to{transform:rotate(360deg);}}
   .errbox{background:#fbecea;border:1px solid #e3b4ac;border-radius:12px;padding:14px 18px;color:#8a2f26;font-size:14px;font-family:"Helvetica Neue",Arial,sans-serif;}
   .needconn{background:#fbf4e4;border:1px solid #e7d6a8;border-radius:12px;padding:14px 18px;color:#8a6d1f;font-size:14px;font-family:"Helvetica Neue",Arial,sans-serif;}
-  .handoff{background:var(--dark);border:1px solid var(--gold);border-radius:12px;padding:14px 20px;color:#e9dfce;font-family:"Helvetica Neue",Arial,sans-serif;font-size:13.5px;margin-top:14px;}
+  .handoff{background:var(--dark);border:1px solid var(--gold);border-radius:12px;padding:13px 18px;color:#e9dfce;font-family:"Helvetica Neue",Arial,sans-serif;font-size:13px;margin-top:14px;}
   .handoff b{color:var(--gold2);}
-  footer{margin-top:44px;padding-top:20px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);font-family:"Helvetica Neue",Arial,sans-serif;}
-
-  @media(max-width:820px){
-    header.hero::after{background:linear-gradient(180deg,rgba(8,8,8,.8) 0%,rgba(8,8,8,.88) 100%);}
-    header.hero::before{background-position:center top;}
-    .hero-content{margin:0;padding:36px 22px;} .hero h1{font-size:32px;}
-    .checkgrid{grid-template-columns:1fr;} .tabbar{top:118px;} .tipsbar{top:44px;}
-  }
-.launchpad{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px;}
-  .launchpad .lplab{color:#e2d8c4;font-family:"Helvetica Neue",Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:.03em;}
-  .launchpad a{display:inline-flex;align-items:center;padding:6px 12px;border-radius:20px;background:rgba(0,0,0,.5);border:1px solid #454545;color:#e9dfce;text-decoration:none;font-family:"Helvetica Neue",Arial,sans-serif;font-size:12px;font-weight:600;transition:all .15s;}
-  .launchpad a:hover{border-color:var(--gold);color:#fff;}
+  .soon{display:inline-block;background:#2a2a2a;color:#c9bca6;border:1px solid #444;border-radius:20px;padding:3px 9px;font-size:10.5px;font-family:"Helvetica Neue",Arial,sans-serif;margin-left:6px;vertical-align:middle;}
+  footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);font-family:"Helvetica Neue",Arial,sans-serif;}
+  @media(max-width:820px){header.hero::after{background:linear-gradient(180deg,rgba(8,8,8,.78),rgba(8,8,8,.9));}header.hero::before{background-position:center top;}.hero-content{margin:0;padding:34px 22px;}.hero h1{font-size:30px;}.checkgrid{grid-template-columns:1fr;}.tabbar{top:150px;}}
 </style>
 </head>
 <body>
@@ -110,23 +103,9 @@
     <div class="kicker">Instituto Vitality · Central do Curador</div>
     <h1>Dr. Tenner Nunes</h1>
     <div class="title">Médico — pós-graduando em Endocrinologia e Metabologia · CRM/RR 2920</div>
-    <p class="tagline">Conteúdo que educa, engaja e respeita o CFM — criado com inteligência artificial.</p>
-    <div class="socials">
-      <a href="https://instagram.com/drtennernunes" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.9.07 1.2.06 1.8.25 2.2.42.6.22 1 .48 1.4.9.42.4.68.8.9 1.4.17.4.36 1 .42 2.2.07 1.3.07 1.7.07 4.9s0 3.6-.07 4.9c-.06 1.2-.25 1.8-.42 2.2-.22.6-.48 1-.9 1.4-.4.42-.8.68-1.4.9-.4.17-1 .36-2.2.42-1.3.07-1.7.07-4.9.07s-3.6 0-4.9-.07c-1.2-.06-1.8-.25-2.2-.42-.6-.22-1-.48-1.4-.9-.42-.4-.68-.8-.9-1.4-.17-.4-.36-1-.42-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.07-4.9c.06-1.2.25-1.8.42-2.2.22-.6.48-1 .9-1.4.4-.42.8-.68 1.4-.9.4-.17 1-.36 2.2-.42C8.4 2.2 8.8 2.2 12 2.2zm0 3.3a6.5 6.5 0 100 13 6.5 6.5 0 000-13zm0 10.7a4.2 4.2 0 110-8.4 4.2 4.2 0 010 8.4zm6.8-11a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/></svg>@drtennernunes</a>
-      <a href="https://instagram.com/instituto.vitality" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.9.07 1.2.06 1.8.25 2.2.42.6.22 1 .48 1.4.9.42.4.68.8.9 1.4.17.4.36 1 .42 2.2.07 1.3.07 1.7.07 4.9s0 3.6-.07 4.9c-.06 1.2-.25 1.8-.42 2.2-.22.6-.48 1-.9 1.4-.4.42-.8.68-1.4.9-.4.17-1 .36-2.2.42-1.3.07-1.7.07-4.9.07s-3.6 0-4.9-.07c-1.2-.06-1.8-.25-2.2-.42-.6-.22-1-.48-1.4-.9-.42-.4-.68-.8-.9-1.4-.17-.4-.36-1-.42-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.07-4.9c.06-1.2.25-1.8.42-2.2.22-.6.48-1 .9-1.4.4-.42.8-.68 1.4-.9.4-.17 1-.36 2.2-.42C8.4 2.2 8.8 2.2 12 2.2zm0 3.3a6.5 6.5 0 100 13 6.5 6.5 0 000-13zm0 10.7a4.2 4.2 0 110-8.4 4.2 4.2 0 010 8.4zm6.8-11a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/></svg>@instituto.vitality</a>
-      <a href="https://instagram.com/tenn3r" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.9.07 1.2.06 1.8.25 2.2.42.6.22 1 .48 1.4.9.42.4.68.8.9 1.4.17.4.36 1 .42 2.2.07 1.3.07 1.7.07 4.9s0 3.6-.07 4.9c-.06 1.2-.25 1.8-.42 2.2-.22.6-.48 1-.9 1.4-.4.42-.8.68-1.4.9-.4.17-1 .36-2.2.42-1.3.07-1.7.07-4.9.07s-3.6 0-4.9-.07c-1.2-.06-1.8-.25-2.2-.42-.6-.22-1-.48-1.4-.9-.42-.4-.68-.8-.9-1.4-.17-.4-.36-1-.42-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.07-4.9c.06-1.2.25-1.8.42-2.2.22-.6.48-1 .9-1.4.4-.42.8-.68 1.4-.9.4-.17 1-.36 2.2-.42C8.4 2.2 8.8 2.2 12 2.2zm0 3.3a6.5 6.5 0 100 13 6.5 6.5 0 000-13zm0 10.7a4.2 4.2 0 110-8.4 4.2 4.2 0 010 8.4zm6.8-11a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/></svg>@tenn3r</a>
-      <a href="https://www.threads.net/@drtennernunes" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M12.2 22c-2.9 0-5.1-1-6.6-2.9C4.3 17.5 3.6 15.2 3.6 12.3v0C3.6 9.4 4.3 7 5.6 5.4 7.1 3.5 9.3 2.5 12.2 2.5c2 0 3.7.5 5 1.5 1.2.9 2.1 2.2 2.6 3.9l-2.1.6c-.7-2.4-2.3-3.6-4.6-3.6-1.8 0-3.2.6-4.1 1.9-.9 1.2-1.4 3-1.4 5.1s.5 3.9 1.4 5.1c.9 1.2 2.3 1.9 4.1 1.9 1.6 0 2.8-.4 3.7-1.3.5-.5.8-1 1-1.6-.6-.4-1.4-.6-2.3-.7-1.6-.1-2.9.3-3.6 1.2-.2.3-.3.6-.3 1 0 .8.6 1.3 1.5 1.3.7 0 1.2-.3 1.5-.9.2-.4.3-.9.3-1.5l2 .1c0 .9-.2 1.7-.6 2.4-.7 1.3-2 2-3.6 2-1.1 0-2-.3-2.7-1-.6-.6-1-1.4-1-2.3 0-1 .4-1.8 1.1-2.4 1.1-1 2.8-1.4 4.9-1.2.7.1 1.3.2 1.9.4.1-.6.1-1.1-.1-1.6-.3-.8-1-1.2-2.1-1.2-1 0-1.7.3-2.1 1l-1.8-1c.8-1.3 2.1-1.9 3.9-1.9 1.9 0 3.3.8 3.9 2.3.3.7.4 1.5.4 2.5v.3c.9.5 1.6 1.2 2 2.1.5 1.2.5 3-.7 4.6C16.9 21 14.9 22 12.2 22z"/></svg>Threads</a>
-      <a href="https://medtenner.com.br" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm6.9 6h-2.9a15.7 15.7 0 00-1.2-3.6A8 8 0 0118.9 8zM12 4c.8 1.1 1.4 2.5 1.8 4h-3.6C10.6 6.5 11.2 5.1 12 4zM4.3 14a8 8 0 010-4h3.3a17.6 17.6 0 000 4H4.3zm.8 2h2.9c.3 1.3.7 2.5 1.2 3.6A8 8 0 015.1 16zM8 8H5.1a8 8 0 014.1-3.6A15.7 15.7 0 008 8zm4 12c-.8-1.1-1.4-2.5-1.8-4h3.6c-.4 1.5-1 2.9-1.8 4zm2.2-6H9.8a15.9 15.9 0 010-4h4.4a15.9 15.9 0 010 4zm.6 5.6c.5-1.1.9-2.3 1.2-3.6h2.9a8 8 0 01-4.1 3.6zM16.4 14a17.6 17.6 0 000-4h3.3a8 8 0 010 4h-3.3z"/></svg>medtenner.com.br</a>
-      <a href="https://institutovitality.com" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm6.9 6h-2.9a15.7 15.7 0 00-1.2-3.6A8 8 0 0118.9 8zM12 4c.8 1.1 1.4 2.5 1.8 4h-3.6C10.6 6.5 11.2 5.1 12 4zM4.3 14a8 8 0 010-4h3.3a17.6 17.6 0 000 4H4.3zm.8 2h2.9c.3 1.3.7 2.5 1.2 3.6A8 8 0 015.1 16zM8 8H5.1a8 8 0 014.1-3.6A15.7 15.7 0 008 8zm4 12c-.8-1.1-1.4-2.5-1.8-4h3.6c-.4 1.5-1 2.9-1.8 4zm2.2-6H9.8a15.9 15.9 0 010-4h4.4a15.9 15.9 0 010 4zm.6 5.6c.5-1.1.9-2.3 1.2-3.6h2.9a8 8 0 01-4.1 3.6zM16.4 14a17.6 17.6 0 000-4h3.3a8 8 0 010 4h-3.3z"/></svg>Instituto Vitality</a>
-    </div>
-    <div class="launchpad">
-      <span class="lplab">Ferramentas de IA:</span>
-      <a href="https://aistudio.google.com/" target="_blank" rel="noopener">Google AI</a>
-      <a href="https://opal.withgoogle.com/" target="_blank" rel="noopener">Opal</a>
-      <a href="https://stitch.withgoogle.com/" target="_blank" rel="noopener">Stitch</a>
-      <a href="https://labs.google/fx/tools/flow" target="_blank" rel="noopener">Flow</a>
-      <a href="https://antigravity.google/" target="_blank" rel="noopener">Antigravity</a>
-    </div>
+    <p class="tagline">Um tema, várias ferramentas de IA — conteúdo que educa, engaja e respeita o CFM.</p>
+    <div class="socials" id="socials"></div>
+    <div class="launchpad" id="launchpad"></div>
   </div>
 </header>
 
@@ -139,279 +118,252 @@
   <span class="cnote">🔒 A chave fica salva só neste navegador. <a href="#" id="forgetKey" style="color:#9f958a">esquecer</a></span>
 </div>
 
-<div class="tipsbar"><span class="tlab">💡 Dica do Curador:</span><span class="ttxt" id="tipTxt">Carregando dica…</span></div>
+<div class="themebar">
+  <span class="tlab">🎯 Tema central:</span>
+  <input type="text" id="temaCentral" placeholder="Digite o tema (ex.: reganho de peso pós-tirzepatida) — vale para todas as abas">
+  <span class="chip" onclick="setTema(this)">platô no emagrecimento</span>
+  <span class="chip" onclick="setTema(this)">saciedade e GLP-1</span>
+  <span class="chip" onclick="setTema(this)">massa magra e longevidade</span>
+</div>
+
+<div class="tipsbar"><span class="tl">💡 Dica:</span><span id="tipTxt">…</span></div>
 
 <nav class="tabbar">
-  <button class="active" data-tab="avaliador" onclick="switchTab(this)">⚖ Avaliador de Tema</button>
-  <button data-tab="gerador" onclick="switchTab(this)">🎬 Gerador de Roteiros</button>
+  <button class="active" data-tab="avaliador" onclick="switchTab(this)">⚖ Avaliar Tema</button>
+  <button data-tab="gerador" onclick="switchTab(this)">🎬 Roteiros</button>
+  <button data-tab="legendas" onclick="switchTab(this)">✍️ Legendas & Hashtags</button>
+  <button data-tab="evidencias" onclick="switchTab(this)">🔬 Evidências (PubMed)</button>
+  <button data-tab="imagem" onclick="switchTab(this)">🎨 Direção de Arte</button>
   <button data-tab="referencia" onclick="switchTab(this)">🔎 Analisar Referência</button>
+  <button data-tab="mais" onclick="switchTab(this)">➕ Mais integrações</button>
 </nav>
 
 <div class="wrap">
 
-<section class="tabpane active" id="tab-avaliador">
-  <div class="tool">
-    <div class="toolkicker">Ferramenta 1 · IA ao vivo</div>
-    <h3>⚖ Avaliador de Tema</h3>
-    <p class="sub">Digite um tema. A Claude faz uma avaliação profunda e específica (força, 4 dimensões, riscos CFM, 5 ângulos originais e um plano de publicações sob medida), sempre com dicas de melhoria ao final.</p>
-    <div class="inputrow">
-      <input type="text" id="temaInput" placeholder="Ex.: reganho de peso depois da tirzepatida">
-      <button class="go" id="btnAval" onclick="avaliarTema()">Avaliar tema</button>
-    </div>
-    <div class="chips">Exemplos:
-      <span class="chip" onclick="setTema('temaInput',this)">platô no emagrecimento</span>
-      <span class="chip" onclick="setTema('temaInput',this)">saciedade e GLP-1</span>
-      <span class="chip" onclick="setTema('temaInput',this)">sono ruim e ganho de peso</span>
-      <span class="chip" onclick="setTema('temaInput',this)">massa magra e longevidade</span>
-    </div>
-    <div class="outwrap" id="outAval"></div>
-  </div>
-</section>
+<section class="tabpane active" id="tab-avaliador"><div class="tool">
+  <div class="tk">IA · usa o tema central</div><h3>⚖ Avaliar Tema</h3>
+  <p class="sub">Avaliação profunda do tema central: força, 4 dimensões, riscos CFM, 5 ângulos originais e plano de publicações — sempre com dicas de melhoria ao final.</p>
+  <button class="go" id="btnAval" onclick="avaliarTema()">Avaliar tema central</button>
+  <div class="outwrap" id="outAval"></div>
+</div></section>
 
-<section class="tabpane" id="tab-gerador">
-  <div class="tool">
-    <div class="toolkicker">Ferramenta 2 · IA ao vivo</div>
-    <h3>🎬 Gerador de Roteiros</h3>
-    <p class="sub">Tema + formato + voz. A Claude escreve um roteiro original e com potencial viral — gancho, desenvolvimento, CTA, legenda e hashtags — e termina com dicas de como melhorar ainda mais.</p>
-    <div class="inputrow">
-      <input type="text" id="temaRoteiro" placeholder="Ex.: o mito do metabolismo lento">
-    </div>
-    <div class="selrow">
-      <select id="formatoRoteiro">
-        <option value="Reel (rosto na câmera, 30–45s)">🎬 Reel (rosto na câmera)</option>
-        <option value="Carrossel educativo de 6–8 cards">🖼 Carrossel educativo</option>
-        <option value="Sequência de Stories (5 telas)">📲 Sequência de Stories</option>
-      </select>
-      <select id="contaRoteiro">
-        <option value='pessoal (voz "eu", @drtennernunes)'>Voz pessoal (@drtennernunes)</option>
-        <option value='institucional (voz "nós", @instituto.vitality)'>Voz institucional (@instituto.vitality)</option>
-      </select>
-      <button class="go" id="btnRot" onclick="gerarRoteiro()">Gerar roteiro</button>
-    </div>
-    <div class="outwrap" id="outRot"></div>
+<section class="tabpane" id="tab-gerador"><div class="tool">
+  <div class="tk">IA · usa o tema central</div><h3>🎬 Gerador de Roteiros</h3>
+  <p class="sub">Roteiro original e viral sobre o tema central — gancho, desenvolvimento, CTA, legenda e hashtags.</p>
+  <div class="selrow">
+    <select id="formatoRoteiro">
+      <option value="Reel (rosto na câmera, 30–45s)">🎬 Reel (rosto na câmera)</option>
+      <option value="Carrossel educativo de 6–8 cards">🖼 Carrossel educativo</option>
+      <option value="Sequência de Stories (5 telas)">📲 Sequência de Stories</option>
+    </select>
+    <select id="contaRoteiro">
+      <option value='pessoal (voz "eu", @drtennernunes)'>Voz pessoal (@drtennernunes)</option>
+      <option value='institucional (voz "nós", @instituto.vitality)'>Voz institucional (@instituto.vitality)</option>
+    </select>
+    <button class="go" id="btnRot" onclick="gerarRoteiro()">Gerar roteiro</button>
   </div>
-</section>
+  <div class="outwrap" id="outRot"></div>
+</div></section>
 
-<section class="tabpane" id="tab-referencia">
-  <div class="tool">
-    <div class="toolkicker">Ferramenta 3 · IA ao vivo</div>
-    <h3>🔎 Analisar &amp; Adaptar Referência</h3>
-    <p class="sub">Coloque o @ de um influenciador, marque o que quer copiar e (opcional) cole legendas dele. A Claude faz a leitura estratégica e um plano de adaptação para a sua marca, com varredura de conformidade e dicas finais.</p>
-    <div class="inputrow">
-      <input type="text" id="refHandle" placeholder="@ do perfil (ex.: @paulomuzy)">
-    </div>
-    <p class="lbl">O que você quer copiar dele?</p>
-    <div class="checkgrid">
-      <label><input type="checkbox" class="refasp" value="ganchos e capas" checked> Ganchos e capas</label>
-      <label><input type="checkbox" class="refasp" value="formato (Reels/carrossel)"> Formato (Reels/carrossel)</label>
-      <label><input type="checkbox" class="refasp" value="depoimentos/prova social"> Depoimentos / prova social</label>
-      <label><input type="checkbox" class="refasp" value="linha editorial/temas"> Linha editorial / temas</label>
-      <label><input type="checkbox" class="refasp" value="tom de voz"> Tom de voz</label>
-      <label><input type="checkbox" class="refasp" value="frequência/constância"> Frequência / constância</label>
-    </div>
-    <p class="lbl">Opcional — cole 1–2 legendas/bio dele para a varredura:</p>
-    <textarea id="refSample" placeholder="Cole aqui um texto do perfil de referência (opcional)."></textarea>
-    <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
-      <button class="go" id="btnCmd" onclick="gerarComando()">🔎 Analisar no Instagram</button>
-      <button id="btnRef" onclick="analisarRef()" style="background:#1a1a1a;color:#e9dfce;border:1px solid var(--gold);border-radius:11px;padding:14px 22px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Helvetica Neue',Arial,sans-serif">Gerar plano aqui (IA)</button>
-    </div>
-    <div class="handoff">🔎 <b>Análise ao vivo (recomendado):</b> clique em <b>Analisar no Instagram</b>, copie o comando gerado e cole no seu chat do Cowork com o Curador. Eu abro o Instagram logado, encontro o perfil e faço a análise e a adaptação de verdade, post a post. O botão <b>Gerar plano aqui (IA)</b> é a versão rápida, sem abrir o Instagram.</div>
-    <div class="outwrap" id="outRef"></div>
+<section class="tabpane" id="tab-legendas"><div class="tool">
+  <div class="tk">IA · usa o tema central</div><h3>✍️ Legendas & Hashtags</h3>
+  <p class="sub">3 variações de legenda prontas para o tema central, com gancho, CTA que gera comentário, nota de conformidade e hashtags.</p>
+  <div class="selrow">
+    <select id="tomLeg">
+      <option value="direto e opinativo">Tom: direto e opinativo</option>
+      <option value="acolhedor e empático">Tom: acolhedor e empático</option>
+      <option value="curioso e provocativo (sem sensacionalismo)">Tom: curioso e provocativo</option>
+    </select>
+    <button class="go" id="btnLeg" onclick="gerarLegendas()">Gerar legendas</button>
   </div>
-</section>
+  <div class="outwrap" id="outLeg"></div>
+</div></section>
+
+<section class="tabpane" id="tab-evidencias"><div class="tool">
+  <div class="tk">API PubMed · usa o tema central</div><h3>🔬 Evidências (PubMed)</h3>
+  <p class="sub">Busca artigos científicos reais no PubMed sobre o tema central (funciona sem chave de IA). Se você estiver conectado, a IA ainda sugere como usar as evidências num post, dentro do CFM.</p>
+  <button class="go" id="btnPub" onclick="buscarPubMed()">Buscar evidências</button>
+  <div class="handoff">Dica: termos em inglês trazem mais resultados. Se conectado, a IA converte o tema automaticamente.</div>
+  <div class="outwrap" id="outPub"></div>
+</div></section>
+
+<section class="tabpane" id="tab-imagem"><div class="tool">
+  <div class="tk">IA · usa o tema central</div><h3>🎨 Direção de Arte &amp; Prompt de Imagem</h3>
+  <p class="sub">Gera o conceito visual do post sobre o tema central na identidade do Instituto (preto/dourado, editorial) + um <b>prompt em inglês pronto</b> para colar no Ideogram, Gemini ou Canva e renderizar a imagem.</p>
+  <div class="selrow">
+    <select id="fmtImg">
+      <option value="capa de carrossel (1080x1350)">Capa de carrossel</option>
+      <option value="post de feed (1080x1080)">Post de feed</option>
+      <option value="story (1080x1920)">Story</option>
+    </select>
+    <button class="go" id="btnImg" onclick="gerarArte()">Gerar direção de arte</button>
+  </div>
+  <div class="outwrap" id="outImg"></div>
+</div></section>
+
+<section class="tabpane" id="tab-referencia"><div class="tool">
+  <div class="tk">Independente · usa o @ (não o tema)</div><h3>🔎 Analisar &amp; Adaptar Referência</h3>
+  <p class="sub">Esta aba é independente do tema central: coloque o @ de um influenciador e marque o que quer copiar.</p>
+  <div class="selrow"><input type="text" id="refHandle" placeholder="@ do perfil (ex.: @paulomuzy)"></div>
+  <p class="lbl">O que você quer copiar dele?</p>
+  <div class="checkgrid">
+    <label><input type="checkbox" class="refasp" value="ganchos e capas" checked> Ganchos e capas</label>
+    <label><input type="checkbox" class="refasp" value="formato (Reels/carrossel)"> Formato (Reels/carrossel)</label>
+    <label><input type="checkbox" class="refasp" value="depoimentos/prova social"> Depoimentos / prova social</label>
+    <label><input type="checkbox" class="refasp" value="linha editorial/temas"> Linha editorial / temas</label>
+    <label><input type="checkbox" class="refasp" value="tom de voz"> Tom de voz</label>
+    <label><input type="checkbox" class="refasp" value="frequência/constância"> Frequência / constância</label>
+  </div>
+  <p class="lbl">Opcional — cole 1–2 legendas/bio dele:</p>
+  <textarea id="refSample" placeholder="Cole aqui um texto do perfil de referência (opcional)."></textarea>
+  <div class="selrow" style="margin-top:12px">
+    <button class="go" id="btnCmd" onclick="gerarComando()">🔎 Analisar no Instagram</button>
+    <button class="go alt" id="btnRef" onclick="analisarRef()">Gerar plano aqui (IA)</button>
+  </div>
+  <div class="handoff">🔎 <b>Análise ao vivo:</b> clique em <b>Analisar no Instagram</b>, copie o comando e cole no seu chat do Cowork com o Curador — eu abro o Instagram e faço a análise real, post a post.</div>
+  <div class="outwrap" id="outRef"></div>
+</div></section>
+
+<section class="tabpane" id="tab-mais"><div class="tool">
+  <div class="tk">Próxima fase · requer backend</div><h3>➕ Integrações que precisam de um servidor</h3>
+  <p class="sub">Estas não rodam numa página estática (usam OAuth/tokens que não podem ficar no navegador). Ficam prontas quando montarmos o app (Vercel/Supabase). O tema central já vai alimentá-las também.</p>
+  <div class="mdout">
+    <p><b>📊 Instagram Graph API</b> <span class="soon">requer backend</span><br>Métricas reais (alcance, salvamentos, comentários) para o Avaliador decidir com base no que performou; agendamento e publicação com sua aprovação.</p>
+    <p><b>🖌 Canva API</b> <span class="soon">requer backend</span><br>Transforma o roteiro em carrossel montado nos seus templates de marca automaticamente.</p>
+    <p><b>🎙 Transcrição (Whisper/Deepgram) + Plaud</b> <span class="soon">requer backend</span><br>Vira áudios de plantão/podcast em legendas e ideias de post.</p>
+    <p><b>🔊 Voz (ElevenLabs) e Vídeo (HeyGen/Veo)</b> <span class="soon">requer backend</span><br>Narração do Reel na sua voz e avatar/vídeo a partir do roteiro.</p>
+    <p><b>🗓 Agendadores (Metricool/Buffer/Later)</b> <span class="soon">requer backend</span><br>Enfileira os rascunhos aprovados direto no Instagram.</p>
+  </div>
+</div></section>
 
   <footer>
     Central do Curador · Instituto Vitality — Diretor Técnico: Dr. Tenner Nunes (CRM/RR 2920).<br>
-    Todo conteúdo é rascunho para revisão e aprovação humana (Res. CFM 2.454/2026). A chave de API é sua e usada apenas neste navegador.
+    Todo conteúdo é rascunho para revisão e aprovação humana (Res. CFM 2.454/2026). Chave e dados ficam apenas neste navegador.
   </footer>
 </div>
 
 <script>
-function switchTab(btn){
-  var id=btn.getAttribute('data-tab');
-  document.querySelectorAll('.tabbar button').forEach(function(b){b.classList.remove('active');});
-  btn.classList.add('active');
-  document.querySelectorAll('.tabpane').forEach(function(p){p.classList.remove('active');});
-  document.getElementById('tab-'+id).classList.add('active');
-}
-function setTema(id,el){document.getElementById(id).value=el.textContent;}
+/* ===== ícones + barras ===== */
+var IG='<svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.9.07 1.2.06 1.8.25 2.2.42.6.22 1 .48 1.4.9.42.4.68.8.9 1.4.17.4.36 1 .42 2.2.07 1.3.07 1.7.07 4.9s0 3.6-.07 4.9c-.06 1.2-.25 1.8-.42 2.2-.22.6-.48 1-.9 1.4-.4.42-.8.68-1.4.9-.4.17-1 .36-2.2.42-1.3.07-1.7.07-4.9.07s-3.6 0-4.9-.07c-1.2-.06-1.8-.25-2.2-.42-.6-.22-1-.48-1.4-.9-.42-.4-.68-.8-.9-1.4-.17-.4-.36-1-.42-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.07-4.9c.06-1.2.25-1.8.42-2.2.22-.6.48-1 .9-1.4.4-.42.8-.68 1.4-.9.4-.17 1-.36 2.2-.42C8.4 2.2 8.8 2.2 12 2.2zm0 3.3a6.5 6.5 0 100 13 6.5 6.5 0 000-13zm0 10.7a4.2 4.2 0 110-8.4 4.2 4.2 0 010 8.4zm6.8-11a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/></svg>';
+var GL='<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm6.9 6h-2.9a15.7 15.7 0 00-1.2-3.6A8 8 0 0118.9 8zM12 4c.8 1.1 1.4 2.5 1.8 4h-3.6C10.6 6.5 11.2 5.1 12 4zM4.3 14a8 8 0 010-4h3.3a17.6 17.6 0 000 4H4.3zm.8 2h2.9c.3 1.3.7 2.5 1.2 3.6A8 8 0 015.1 16zM8 8H5.1a8 8 0 014.1-3.6A15.7 15.7 0 008 8zm4 12c-.8-1.1-1.4-2.5-1.8-4h3.6c-.4 1.5-1 2.9-1.8 4zm2.2-6H9.8a15.9 15.9 0 010-4h4.4a15.9 15.9 0 010 4zm.6 5.6c.5-1.1.9-2.3 1.2-3.6h2.9a8 8 0 01-4.1 3.6zM16.4 14a17.6 17.6 0 000-4h3.3a8 8 0 010 4h-3.3z"/></svg>';
+var SOC=[['https://instagram.com/drtennernunes',IG,'@drtennernunes'],['https://instagram.com/instituto.vitality',IG,'@instituto.vitality'],['https://instagram.com/tenn3r',IG,'@tenn3r'],['https://www.threads.net/@drtennernunes','','Threads'],['https://medtenner.com.br',GL,'medtenner.com.br'],['https://institutovitality.com',GL,'Instituto Vitality']];
+document.getElementById('socials').innerHTML=SOC.map(function(s){return '<a href="'+s[0]+'" target="_blank" rel="noopener">'+s[1]+s[2]+'</a>';}).join('');
+var LP=[['https://aistudio.google.com/','Google AI'],['https://opal.withgoogle.com/','Opal'],['https://stitch.withgoogle.com/','Stitch'],['https://labs.google/fx/tools/flow','Flow'],['https://antigravity.google/','Antigravity']];
+document.getElementById('launchpad').innerHTML='<span class="lplab">Ferramentas de IA:</span>'+LP.map(function(l){return '<a href="'+l[0]+'" target="_blank" rel="noopener">'+l[1]+'</a>';}).join('');
 
-/* ===== Dicas rotativas ===== */
-var TIPS=[
- 'Grave os Reels na horizontal do olhar: a câmera na altura dos olhos passa autoridade.',
- 'O gancho vive nos primeiros 3 segundos — comece pela frase mais forte, sem "oi, pessoal".',
- 'Termine todo post com UMA pergunta fácil de responder: pergunta binária gera mais comentário.',
- 'Responda todos os comentários nas 2 primeiras horas: o algoritmo lê como conversa viva.',
- 'Depoimento de paciente (com consentimento, na voz dele) é o formato que mais engaja.',
- 'Legenda pela molécula (tirzepatida), nunca pela marca — além de correto, protege sua imagem.',
- 'Uma ideia por card/cena. Retenção cai quando você empilha informação.',
- 'Reels de rosto na câmera superam carrossel estático na sua conta — priorize.',
- 'Use seu treino/jiu-jitsu como metáfora clínica: humaniza e reforça autoridade (só na conta pessoal).',
- 'Capa com "curiosity-gap" vende a abertura. Prometa uma revelação, não um resumo.',
- 'Fixe um comentário-âncora com a continuação do assunto para puxar a conversa.',
- 'Constância vence volume: 3 posts fortes por semana rendem mais que 7 fracos.'
-];
-(function(){var i=0,el=document.getElementById('tipTxt');function rot(){el.textContent=TIPS[i%TIPS.length];i++;}rot();setInterval(rot,7000);})();
+/* ===== tabs / tema / dicas ===== */
+function switchTab(btn){document.querySelectorAll('.tabbar button').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');document.querySelectorAll('.tabpane').forEach(function(p){p.classList.remove('active');});document.getElementById('tab-'+btn.getAttribute('data-tab')).classList.add('active');}
+function getTema(){return document.getElementById('temaCentral').value.trim();}
+function setTema(el){document.getElementById('temaCentral').value=el.textContent;try{localStorage.setItem('curador_tema',el.textContent);}catch(e){}}
+document.getElementById('temaCentral').addEventListener('input',function(){try{localStorage.setItem('curador_tema',this.value);}catch(e){}});
+var TIPS=['O gancho vive nos 3 primeiros segundos — comece pela frase mais forte.','Pergunta binária no fim gera mais comentário do que "agende".','Responda todos os comentários nas 2 primeiras horas.','Depoimento na voz do paciente é o formato que mais engaja.','Molécula (tirzepatida), nunca marca — correto e mais seguro.','Uma ideia por card/cena; retenção cai quando empilha informação.','Constância vence volume: 3 posts fortes por semana.'];
+(function(){var i=0,el=document.getElementById('tipTxt');function r(){el.textContent=TIPS[i%TIPS.length];i++;}r();setInterval(r,7000);})();
 
-/* ===== Conexão Claude ===== */
+/* ===== conexão (Claude/Gemini) + persistência ===== */
 var API={key:'',ready:false,provider:'claude'};
 var HEAD=function(){return {'x-api-key':API.key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true','content-type':'application/json'};};
 async function connectClaude(){
-  var k=document.getElementById('apiKey').value.trim();
-  var prov=(document.getElementById('provider')||{value:'claude'}).value;
-  var st=document.getElementById('connStatus');
+  var k=document.getElementById('apiKey').value.trim(),prov=document.getElementById('provider').value,st=document.getElementById('connStatus'),sel=document.getElementById('modelSel');
   if(!k){st.textContent='● Cole sua chave primeiro';st.className='cst';return;}
-  API.key=k; API.provider=prov; st.textContent='● Conectando...'; st.className='cst';
-  var sel=document.getElementById('modelSel');
+  API.key=k;API.provider=prov;st.textContent='● Conectando...';st.className='cst';
   try{
     if(prov==='claude'){
       var r=await fetch('https://api.anthropic.com/v1/models?limit=100',{headers:HEAD()});
-      if(!r.ok){var e=await r.text();throw new Error('HTTP '+r.status+' '+(r.status===401?'(chave inválida)':'')+' '+e.slice(0,120));}
-      var d=await r.json(); sel.innerHTML='';
-      (d.data||[]).forEach(function(m){var o=document.createElement('option');o.value=m.id;o.textContent=m.display_name||m.id;sel.appendChild(o);});
+      if(!r.ok){throw new Error('HTTP '+r.status+(r.status===401?' (chave inválida)':''));}
+      var d=await r.json();sel.innerHTML='';(d.data||[]).forEach(function(m){var o=document.createElement('option');o.value=m.id;o.textContent=m.display_name||m.id;sel.appendChild(o);});
       if(!sel.options.length){var o=document.createElement('option');o.value='claude-sonnet-4-20250514';o.textContent='claude-sonnet-4';sel.appendChild(o);}
-      var pref=-1;for(var i=0;i<sel.options.length;i++){if(/sonnet/i.test(sel.options[i].value)){pref=i;break;}}
-      sel.selectedIndex=pref>=0?pref:0;
-    } else {
+      var pf=-1;for(var i=0;i<sel.options.length;i++){if(/sonnet/i.test(sel.options[i].value)){pf=i;break;}}sel.selectedIndex=pf>=0?pf:0;
+    }else{
       var r=await fetch('https://generativelanguage.googleapis.com/v1beta/models?key='+encodeURIComponent(k));
-      if(!r.ok){var e=await r.text();throw new Error('HTTP '+r.status+' '+((r.status===400||r.status===403)?'(chave inválida)':'')+' '+e.slice(0,120));}
-      var d=await r.json(); sel.innerHTML='';
-      (d.models||[]).filter(function(m){return (m.supportedGenerationMethods||[]).indexOf('generateContent')>-1;}).forEach(function(m){var id=m.name.replace('models/','');var o=document.createElement('option');o.value=id;o.textContent=id;sel.appendChild(o);});
+      if(!r.ok){throw new Error('HTTP '+r.status+((r.status===400||r.status===403)?' (chave inválida)':''));}
+      var d=await r.json();sel.innerHTML='';(d.models||[]).filter(function(m){return (m.supportedGenerationMethods||[]).indexOf('generateContent')>-1;}).forEach(function(m){var id=m.name.replace('models/','');var o=document.createElement('option');o.value=id;o.textContent=id;sel.appendChild(o);});
       if(!sel.options.length){var o=document.createElement('option');o.value='gemini-1.5-flash';o.textContent='gemini-1.5-flash';sel.appendChild(o);}
-      var pref=-1;for(var i=0;i<sel.options.length;i++){if(/flash/i.test(sel.options[i].value)){pref=i;break;}}
-      sel.selectedIndex=pref>=0?pref:0;
+      var pf=-1;for(var i=0;i<sel.options.length;i++){if(/flash/i.test(sel.options[i].value)){pf=i;break;}}sel.selectedIndex=pf>=0?pf:0;
     }
-    try{var sm=localStorage.getItem('curador_model'); if(sm){for(var j=0;j<sel.options.length;j++){if(sel.options[j].value===sm){sel.selectedIndex=j;break;}}}}catch(e){}
-    sel.style.display='';
-    API.ready=true; st.textContent='✓ Conectado ('+(prov==='claude'?'Claude':'Gemini')+')'; st.className='cst ok';
+    try{var sm=localStorage.getItem('curador_model');if(sm){for(var j=0;j<sel.options.length;j++){if(sel.options[j].value===sm){sel.selectedIndex=j;break;}}}}catch(e){}
+    sel.style.display='';API.ready=true;st.textContent='✓ Conectado ('+(prov==='claude'?'Claude':'Gemini')+')';st.className='cst ok';
     try{localStorage.setItem('curador_key',k);localStorage.setItem('curador_provider',prov);localStorage.setItem('curador_model',sel.value);}catch(e){}
-  }catch(err){API.ready=false; st.textContent='● Falha ao conectar'; st.className='cst'; alert('Não consegui conectar: '+err.message);}
+  }catch(err){API.ready=false;st.textContent='● Falha ao conectar';st.className='cst';alert('Não consegui conectar: '+err.message);}
 }
-
-var SYS=[
-'Você é o CURADOR, estrategista de conteúdo de Instagram do Dr. Tenner Nunes — marketing médico brasileiro com conformidade ética rigorosa E criatividade de altíssimo nível.',
-'',
-'PERFIL: Dr. Tenner Nunes — CRM/RR 2920. Titulação correta e OBRIGATÓRIA: "Médico — pós-graduando em Endocrinologia e Metabologia". NUNCA use "especialista", "endocrinologista" ou "expert" (ele não possui RQE). Foco clínico: emagrecimento e saúde metabólica com análogos de GLP-1/GIP, reposição vitamínica injetável e adjuvantes orais. Protocolo autoral: Método Renova Corps(R). Ele pratica jiu-jitsu e musculação — ativo autêntico da MARCA PESSOAL (nunca no institucional).',
-'',
-'REGRAS INEGOCIÁVEIS:',
-'- Medicamentos SEMPRE pela molécula (tirzepatida, semaglutida, liraglutida); NUNCA por marca comercial.',
-'- NUNCA use a palavra "soroterapia". Reposição vitamínica = "sob necessidade, após avaliação médica individual".',
-'- Toda menção a tratamento vem com individualização + avaliação médica presencial.',
-'- Registro EDUCATIVO, jamais vendedor. Proibido "cura", "milagre", "garantido", "resultado rápido".',
-'- Marca pessoal @drtennernunes (voz "eu") e institucional @instituto.vitality (voz "nós") são SEPARADAS — nunca misture as duas.',
-'- Tudo é RASCUNHO para revisão e aprovação humana.',
-'',
-'CRIATIVIDADE (essencial): seja ORIGINAL e imprevisível a CADA resposta — metáforas novas, aberturas inesperadas, storytelling. É TERMINANTEMENTE PROIBIDO reutilizar frases-clichê como "não é (só) falta de vontade", "a balança é a métrica mais burra", "seu corpo não é preguiçoso" ou variações batidas. Invente linguagem nova sempre.',
-'',
-'FORMATO: responda em Markdown limpo (##, ###, listas, **negrito**). Escreva em português do Brasil.',
-'OBRIGATÓRIO: termine TODA resposta com uma seção "## 💡 Como deixar ainda melhor" contendo 2 a 3 dicas práticas e específicas para elevar aquele material (retenção, prova social, CTA, estética, gancho, etc.).'
-].join('\n');
-
-async function ask(userPrompt,maxTokens){
+var SYS=['Você é o CURADOR, estrategista de conteúdo de Instagram do Dr. Tenner Nunes — marketing médico brasileiro com conformidade ética rigorosa E criatividade de altíssimo nível.','','PERFIL: Dr. Tenner Nunes — CRM/RR 2920. Titulação OBRIGATÓRIA: "Médico — pós-graduando em Endocrinologia e Metabologia". NUNCA "especialista/endocrinologista/expert" (sem RQE). Foco: emagrecimento e saúde metabólica com análogos de GLP-1/GIP, reposição vitamínica e adjuvantes. Método autoral: Renova Corps(R). Pratica jiu-jitsu e musculação (marca pessoal).','','REGRAS: medicamento pela molécula (tirzepatida, semaglutida, liraglutida), nunca marca; nunca a palavra "soroterapia" (reposição = "sob necessidade, após avaliação médica individual"); toda menção a tratamento com individualização + avaliação médica; registro EDUCATIVO, jamais vendedor; nada de "cura/milagre/garantido/rápido"; @drtennernunes (voz "eu") e @instituto.vitality (voz "nós") SEPARADAS; tudo é RASCUNHO para revisão humana.','','CRIATIVIDADE: seja ORIGINAL a cada resposta; PROIBIDO reutilizar clichês como "não é (só) falta de vontade","a balança é a métrica mais burra","seu corpo não é preguiçoso".','','FORMATO: Markdown limpo, português do Brasil. Termine TODA resposta com "## 💡 Como deixar ainda melhor" (2–3 dicas específicas).'].join('\n');
+async function ask(p,mt){
   var model=document.getElementById('modelSel').value;
   if(API.provider==='gemini'){
-    var url='https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+encodeURIComponent(API.key);
-    var r=await fetch(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({
-      system_instruction:{parts:[{text:SYS}]},
-      contents:[{role:'user',parts:[{text:userPrompt}]}],
-      generationConfig:{maxOutputTokens:maxTokens||3800}
-    })});
-    if(!r.ok){var e=await r.text();throw new Error('HTTP '+r.status+': '+e.slice(0,240));}
-    var d=await r.json();
-    var c=(d.candidates&&d.candidates[0]&&d.candidates[0].content&&d.candidates[0].content.parts)||[];
-    return c.map(function(p){return p.text||'';}).join('\n');
+    var r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+encodeURIComponent(API.key),{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({system_instruction:{parts:[{text:SYS}]},contents:[{role:'user',parts:[{text:p}]}],generationConfig:{maxOutputTokens:mt||3800}})});
+    if(!r.ok){throw new Error('HTTP '+r.status+': '+(await r.text()).slice(0,200));}
+    var d=await r.json();var c=(d.candidates&&d.candidates[0]&&d.candidates[0].content&&d.candidates[0].content.parts)||[];return c.map(function(x){return x.text||'';}).join('\n');
   }
-  var r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:HEAD(),body:JSON.stringify({
-    model:model, max_tokens:maxTokens||3800, system:SYS,
-    messages:[{role:'user',content:userPrompt}]
-  })});
-  if(!r.ok){var e=await r.text();throw new Error('HTTP '+r.status+': '+e.slice(0,240));}
-  var d=await r.json();
-  return (d.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n');
+  var r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:HEAD(),body:JSON.stringify({model:model,max_tokens:mt||3800,system:SYS,messages:[{role:'user',content:p}]})});
+  if(!r.ok){throw new Error('HTTP '+r.status+': '+(await r.text()).slice(0,200));}
+  var d=await r.json();return (d.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n');
 }
-
-function mdToHtml(md){
-  var lines=(md||'').replace(/\r/g,'').split('\n'), html='', inUl=false, inOl=false;
-  function close(){if(inUl){html+='</ul>';inUl=false;}if(inOl){html+='</ol>';inOl=false;}}
-  function inl(s){s=s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');s=s.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');s=s.replace(/(^|[^*])\*([^*]+)\*/g,'$1<i>$2</i>');s=s.replace(/`([^`]+)`/g,'<code>$1</code>');return s;}
-  for(var i=0;i<lines.length;i++){
-    var t=lines[i].trim();
-    if(!t){close();continue;}
-    if(/^---+$/.test(t)){close();html+='<hr>';continue;}
-    var hm=/^(#{1,6})\s+(.*)$/.exec(t);
-    if(hm){close();var lv=Math.min(4,hm[1].length+1);html+='<h'+lv+'>'+inl(hm[2])+'</h'+lv+'>';continue;}
-    var um=/^[-*]\s+(.*)$/.exec(t);
-    if(um){if(!inUl){close();html+='<ul>';inUl=true;}html+='<li>'+inl(um[1])+'</li>';continue;}
-    var om=/^\d+\.\s+(.*)$/.exec(t);
-    if(om){if(!inOl){close();html+='<ol>';inOl=true;}html+='<li>'+inl(om[1])+'</li>';continue;}
-    close();html+='<p>'+inl(t)+'</p>';
-  }
-  close();return html;
+function md(t){var L=(t||'').replace(/\r/g,'').split('\n'),h='',ul=0,ol=0;function c(){if(ul){h+='</ul>';ul=0;}if(ol){h+='</ol>';ol=0;}}function il(s){s=s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');s=s.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');s=s.replace(/(^|[^*])\*([^*]+)\*/g,'$1<i>$2</i>');s=s.replace(/`([^`]+)`/g,'<code>$1</code>');return s;}for(var i=0;i<L.length;i++){var t2=L[i].trim();if(!t2){c();continue;}if(/^---+$/.test(t2)){c();h+='<hr>';continue;}var hm=/^(#{1,6})\s+(.*)$/.exec(t2);if(hm){c();var lv=Math.min(4,hm[1].length+1);h+='<h'+lv+'>'+il(hm[2])+'</h'+lv+'>';continue;}var um=/^[-*]\s+(.*)$/.exec(t2);if(um){if(!ul){c();h+='<ul>';ul=1;}h+='<li>'+il(um[1])+'</li>';continue;}var om=/^\d+\.\s+(.*)$/.exec(t2);if(om){if(!ol){c();h+='<ol>';ol=1;}h+='<li>'+il(om[1])+'</li>';continue;}c();h+='<p>'+il(t2)+'</p>';}c();return h;}
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+window.copiarTxt=function(el){var t=el.getAttribute('data-full');var ta=document.createElement('textarea');ta.innerHTML=t;t=ta.value;if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){var o=el.textContent;el.textContent='Copiado ✓';setTimeout(function(){el.textContent=o;},1500);});}};
+async function run(outId,btnId,prompt,mt){
+  if(!API.ready){document.getElementById(outId).innerHTML='<div class="needconn">Conecte sua chave (Claude ou Gemini) na barra do topo para usar esta ferramenta.</div>';return;}
+  var out=document.getElementById(outId),btn=document.getElementById(btnId);btn.disabled=true;
+  out.innerHTML='<div class="loading"><span class="spin"></span>Gerando com a IA...</div>';
+  try{var txt=await ask(prompt,mt);out.innerHTML='<div class="mdout">'+md(txt)+'<button class="copybtn" data-full="'+esc(txt)+'" onclick="copiarTxt(this)">Copiar tudo</button></div>';}
+  catch(err){out.innerHTML='<div class="errbox"><b>Erro:</b> '+esc(err.message)+'</div>';}finally{btn.disabled=false;}
 }
-function escAttr(s){return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
-window.copiarTxt=function(el){var txt=el.getAttribute('data-full');var ta=document.createElement('textarea');ta.innerHTML=txt;txt=ta.value;if(navigator.clipboard){navigator.clipboard.writeText(txt).then(function(){var o=el.textContent;el.textContent='Copiado ✓';setTimeout(function(){el.textContent=o;},1500);});}};
+function needTema(outId){if(!getTema()){document.getElementById(outId).innerHTML='<div class="needconn">Digite o tema central na barra 🎯 do topo primeiro.</div>';return true;}return false;}
 
-async function run(outId,btnId,prompt,maxTokens){
-  if(!API.ready){document.getElementById(outId).innerHTML='<div class="needconn">Conecte sua chave da Claude na barra do topo para usar esta ferramenta.</div>';return;}
-  var out=document.getElementById(outId), btn=document.getElementById(btnId);
-  btn.disabled=true;
-  out.innerHTML='<div class="loading"><span class="spin"></span>Gerando com a Claude... isso leva alguns segundos.</div>';
+/* ===== abas que usam o tema central ===== */
+function avaliarTema(){if(needTema('outAval'))return;var t=getTema();run('outAval','btnAval','Avalie PROFUNDAMENTE este tema para o Instagram do Dr. Tenner Nunes.\n\nTEMA: "'+t+'"\n\nEm Markdown, específico a ESTE tema:\n## Força do tema\nNota 0–100 + frase de veredito.\n## 4 dimensões\nNota + 1 linha cada: Relevância ao nicho; Potencial emocional; Gancho/curiosidade; Originalidade/viral.\n## Riscos de conformidade CFM\nEspecíficos + como contornar.\n## 5 ângulos criativos e originais\n## Plano de publicações\nReel, Carrossel, Story, História real e institucional — cada um com gancho original.',3900);}
+function gerarRoteiro(){if(needTema('outRot'))return;var t=getTema(),f=document.getElementById('formatoRoteiro').value,v=document.getElementById('contaRoteiro').value;run('outRot','btnRot','Crie um ROTEIRO completo, ORIGINAL e com potencial viral.\n\nTEMA: "'+t+'"\nFORMATO: '+f+'\nVOZ: '+v+'\n\nInclua: gancho de 3s inédito; desenvolvimento (uma ideia por trecho); CTA que gera comentário; marcação de tempos/telas (Reel/Story) ou card a card (Carrossel); LEGENDA pronta com nota de individualização e assinatura correta; 6–8 hashtags. Markdown.',3900);}
+function gerarLegendas(){if(needTema('outLeg'))return;var t=getTema(),tom=document.getElementById('tomLeg').value;run('outLeg','btnLeg','Escreva 3 variações de LEGENDA de Instagram sobre "'+t+'", em tom '+tom+'. Cada variação: gancho forte na 1ª linha + corpo curto + CTA que gera comentário (pergunta fácil) + nota de individualização/avaliação médica + assinatura correta. No fim, um bloco com 8 hashtags relevantes. Markdown, separando as 3 variações.',3200);}
+function gerarArte(){if(needTema('outImg'))return;var t=getTema(),f=document.getElementById('fmtImg').value;run('outImg','btnImg','Crie a DIREÇÃO DE ARTE para uma '+f+' sobre "'+t+'", na identidade do Instituto Vitality (fundo preto/escuro, dourado #C9A44C, tipografia serifada elegante, ar editorial clínico premium; opção de foto do Dr. Tenner em P&B). Entregue em Markdown:\n## Conceito visual\n## Composição / layout\n## Paleta e tipografia\n## Texto sugerido na arte (curto)\n## Prompt de imagem (em inglês)\nUm prompt detalhado, pronto para colar no Ideogram, Google Gemini ou Canva para renderizar.',3000);}
+
+/* ===== PubMed (API real, sem chave) ===== */
+async function buscarPubMed(){
+  if(needTema('outPub'))return;var t=getTema(),out=document.getElementById('outPub'),btn=document.getElementById('btnPub');btn.disabled=true;
+  out.innerHTML='<div class="loading"><span class="spin"></span>Buscando no PubMed...</div>';
   try{
-    var txt=await ask(prompt,maxTokens);
-    out.innerHTML='<div class="mdout">'+mdToHtml(txt)+'<button class="copybtn" data-full="'+escAttr(txt)+'" onclick="copiarTxt(this)">Copiar tudo</button></div>';
-  }catch(err){out.innerHTML='<div class="errbox"><b>Erro:</b> '+escAttr(err.message)+'</div>';}
+    var q=t;
+    if(API.ready){try{q=(await ask('Converta este tema em uma query curta de busca do PubMed em INGLÊS (só a query, sem aspas, sem explicação): "'+t+'"',80)).trim().replace(/^"|"$/g,'').split('\n')[0]||t;}catch(e){}}
+    var es=await fetch('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&retmax=6&sort=relevance&term='+encodeURIComponent(q));
+    var ed=await es.json();var ids=(ed.esearchresult&&ed.esearchresult.idlist)||[];
+    if(!ids.length){out.innerHTML='<div class="mdout"><p>Nenhum artigo encontrado para <b>'+esc(q)+'</b>. Tente um tema mais específico ou em inglês.</p></div>';btn.disabled=false;return;}
+    var su=await fetch('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id='+ids.join(','));
+    var sd=await su.json(),res=sd.result||{};
+    var h='<div class="mdout"><h3>Evidências (PubMed) · busca: '+esc(q)+'</h3>';
+    ids.forEach(function(id){var a=res[id];if(!a)return;var au=(a.authors||[]).slice(0,3).map(function(x){return x.name;}).join(', ');h+='<div class="refitem"><b>'+esc(a.title||'(sem título)')+'</b><div class="meta">'+esc(au)+(a.source?' · '+esc(a.source):'')+(a.pubdate?' · '+esc(a.pubdate):'')+'</div><a href="https://pubmed.ncbi.nlm.nih.gov/'+id+'/" target="_blank">PMID '+id+' ↗</a></div>';});
+    h+='</div>';out.innerHTML=h;
+    if(API.ready){
+      var syn=document.createElement('div');syn.className='mdout';syn.style.marginTop='16px';syn.innerHTML='<div class="loading" style="border:none;background:none"><span class="spin"></span>Sintetizando uso editorial...</div>';out.appendChild(syn);
+      try{var titles=ids.map(function(id){return res[id]?('- '+res[id].title):'';}).join('\n');var s=await ask('Com base nestes títulos de artigos do PubMed sobre "'+t+'":\n'+titles+'\n\nEscreva, em Markdown, como o Dr. Tenner pode usar essas evidências num post educativo (sem citar dados que não estão nos títulos, sem promessas, dentro do CFM): um parágrafo de enquadramento + 3 pontos-chave comunicáveis com responsabilidade.',1500);syn.innerHTML=md(s);}catch(e){syn.remove();}
+    }
+  }catch(err){out.innerHTML='<div class="errbox"><b>Erro ao consultar o PubMed:</b> '+esc(err.message)+'</div>';}
   finally{btn.disabled=false;}
 }
 
-function avaliarTema(){
-  var tema=document.getElementById('temaInput').value.trim();
-  if(!tema){document.getElementById('outAval').innerHTML='<div class="needconn">Digite um tema.</div>';return;}
-  var p='Avalie PROFUNDAMENTE este tema para conteúdo de Instagram do Dr. Tenner Nunes.\n\nTEMA: "'+tema+'"\n\nEntregue em Markdown, específico a ESTE tema (nunca genérico):\n\n## Força do tema\nUma nota de 0 a 100 e uma frase de veredito.\n\n## Avaliação em 4 dimensões\nPara cada uma, nota (0–100) + 1 linha de justificativa ESPECÍFICA: Relevância ao nicho; Potencial emocional; Gancho/curiosidade; Originalidade e potencial viral.\n\n## Riscos de conformidade CFM\nRiscos específicos deste tema (ou informe que não há riscos aparentes) e como contorná-los.\n\n## 5 ângulos criativos e originais\nCinco abordagens realmente diferentes e não óbvias.\n\n## Plano de publicações para este tema\nReel, Carrossel, Story, História real e versão institucional — cada um com um gancho ORIGINAL e o objetivo de métrica.';
-  run('outAval','btnAval',p,3900);
-}
-function gerarRoteiro(){
-  var tema=document.getElementById('temaRoteiro').value.trim();
-  if(!tema){document.getElementById('outRot').innerHTML='<div class="needconn">Digite um tema.</div>';return;}
-  var fmt=document.getElementById('formatoRoteiro').value, voz=document.getElementById('contaRoteiro').value;
-  var p='Crie um ROTEIRO completo, ORIGINAL e com real potencial viral.\n\nTEMA: "'+tema+'"\nFORMATO: '+fmt+'\nVOZ: '+voz+'\n\nExigências:\n- Um gancho de 3 segundos inédito e forte (nada de clichê).\n- Desenvolvimento com uma ideia por trecho, ritmo de retenção.\n- Um CTA que provoque COMENTÁRIO (pergunta fácil), não venda.\n- Se for Reel ou Stories: marque tempos/telas e traga direções de gravação. Se for Carrossel: escreva card a card.\n- Uma LEGENDA pronta, com a nota de individualização/avaliação médica e a assinatura correta.\n- 6–8 hashtags relevantes.\nUse Markdown. Seja criativo e específico; se fizer sentido, aproveite o fato de o Dr. Tenner praticar jiu-jitsu/musculação (apenas na voz pessoal).';
-  run('outRot','btnRot',p,3900);
-}
+/* ===== Analisar Referência (independente) ===== */
 function analisarRef(){
-  var handle=document.getElementById('refHandle').value.trim();
-  var sample=document.getElementById('refSample').value.trim();
-  var asps=[];document.querySelectorAll('.refasp:checked').forEach(function(c){asps.push(c.value);});
-  if(!handle && !asps.length){document.getElementById('outRef').innerHTML='<div class="needconn">Coloque o @ e marque ao menos um item.</div>';return;}
-  var p='O Dr. Tenner Nunes quer usar este perfil como referência de inspiração.\n\nPERFIL: '+(handle||'(não informado)')+'\nO QUE COPIAR: '+(asps.join(', ')||'aspectos gerais')+'\n';
-  if(sample){p+='\nTEXTO COLADO DO PERFIL (analise de verdade):\n"""\n'+sample+'\n"""\n';}
-  p+='\nEntregue em Markdown:\n## Leitura estratégica\nO que torna esse perfil forte nos aspectos escolhidos. Se não conhecer o perfil, diga e trabalhe com princípios + o texto.\n## Plano de adaptação para a marca do Dr. Tenner\nItem a item, mantendo conformidade CFM (molécula não marca, sem "especialista", individualização, separação pessoal x institucional).\n## Varredura de conformidade\nSe houver texto colado, aponte o que NÃO copiar (promessas, marcas, alegação de especialidade). Senão, liste riscos típicos.\n## 3 ideias originais já adaptadas\nTrês conceitos inspirados na referência, porém originais e prontos para a marca dele.';
-  run('outRef','btnRef',p,3900);
+  var handle=document.getElementById('refHandle').value.trim(),sample=document.getElementById('refSample').value.trim(),asps=[];
+  document.querySelectorAll('.refasp:checked').forEach(function(c){asps.push(c.value);});
+  if(!handle&&!asps.length){document.getElementById('outRef').innerHTML='<div class="needconn">Coloque o @ e marque ao menos um item.</div>';return;}
+  var p='O Dr. Tenner Nunes quer usar este perfil como referência.\n\nPERFIL: '+(handle||'(não informado)')+'\nO QUE COPIAR: '+(asps.join(', ')||'aspectos gerais')+'\n';
+  if(sample)p+='\nTEXTO COLADO:\n"""\n'+sample+'\n"""\n';
+  p+='\nMarkdown:\n## Leitura estratégica\n## Plano de adaptação para a marca do Dr. Tenner\nMantendo CFM (molécula não marca, sem "especialista", individualização, separação pessoal x institucional).\n## Varredura de conformidade\nO que NÃO copiar.\n## 3 ideias originais já adaptadas';
+  run('outRef','btnRef',p,3600);
 }
 function gerarComando(){
-  var handle=document.getElementById('refHandle').value.trim().replace(/^@+/,'');
-  var sample=document.getElementById('refSample').value.trim();
-  var asps=[];document.querySelectorAll('.refasp:checked').forEach(function(c){asps.push(c.value);});
-  var out=document.getElementById('outRef');
-  if(!handle){out.innerHTML='<div class="needconn">Coloque o @ do perfil de referência primeiro.</div>';return;}
-  var cmd='Curador, análise de referência AO VIVO no Instagram.\n\n'
-    +'Abra o Instagram (logado) e vá ao perfil @'+handle+'. Leia a bio, o grid e os posts de maior engajamento (uns 6 a 9), anotando números reais (curtidas, comentários, formato).\n\n'
-    +'Foque no que eu quero copiar dele: '+(asps.join(', ')||'aspectos gerais')+'.\n\n'
-    +'Depois entregue, em português:\n'
-    +'1) Leitura estratégica do que torna esse perfil forte nesses aspectos (com os números que você viu).\n'
-    +'2) Plano de adaptação para a MINHA marca (Dr. Tenner Nunes — Médico, pós-graduando em Endocrinologia e Metabologia; CRM/RR 2920), mantendo conformidade CFM: medicamento pela molécula (nunca marca comercial), nunca "especialista"/"soroterapia", sempre individualização + avaliação médica, e separação entre @drtennernunes (pessoal, voz "eu") e @instituto.vitality (institucional, voz "nós").\n'
-    +'3) O que NÃO copiar dele (riscos de conformidade).\n'
-    +'4) 3 ideias de conteúdo originais já adaptadas e prontas para gravar (cada uma com um gancho).';
-  if(sample)cmd+='\n\nConsidere também este texto que copiei do perfil dele:\n"""\n'+sample+'\n"""';
-  out.innerHTML='<div class="mdout"><h3>Comando pronto para o Cowork</h3><p>Copie o comando abaixo e cole no seu chat do Cowork com o Curador. Eu faço a análise ao vivo no Instagram e devolvo a adaptação, post a post.</p><div style="background:#161616;border:1px solid #333333;border-radius:12px;padding:14px 16px;white-space:pre-wrap;font-family:monospace;font-size:12.5px;color:#e9dfce;margin-top:8px">'+escAttr(cmd)+'</div><div style="margin-top:12px"><button class="copybtn" data-full="'+escAttr(cmd)+'" onclick="copiarTxt(this)">Copiar comando</button> <a class="copybtn" style="text-decoration:none;display:inline-block" href="https://claude.ai" target="_blank" rel="noopener">Abrir Claude / Cowork</a></div></div>';
+  var handle=document.getElementById('refHandle').value.trim().replace(/^@+/,''),sample=document.getElementById('refSample').value.trim(),asps=[];
+  document.querySelectorAll('.refasp:checked').forEach(function(c){asps.push(c.value);});
+  var out=document.getElementById('outRef');if(!handle){out.innerHTML='<div class="needconn">Coloque o @ do perfil primeiro.</div>';return;}
+  var cmd='Curador, análise de referência AO VIVO no Instagram.\n\nAbra o Instagram (logado) e vá ao perfil @'+handle+'. Leia a bio, o grid e os posts de maior engajamento (uns 6 a 9), com números reais.\n\nFoque no que eu quero copiar: '+(asps.join(', ')||'aspectos gerais')+'.\n\nEntregue: (1) leitura estratégica; (2) plano de adaptação para a MINHA marca (Dr. Tenner Nunes — Médico, pós-graduando em Endocrinologia e Metabologia; CRM/RR 2920) com conformidade CFM (molécula não marca, sem "especialista", individualização, separação @drtennernunes x @instituto.vitality); (3) o que NÃO copiar; (4) 3 ideias originais já adaptadas.';
+  if(sample)cmd+='\n\nTexto que copiei do perfil:\n"""\n'+sample+'\n"""';
+  out.innerHTML='<div class="mdout"><h3>Comando pronto para o Cowork</h3><p>Copie e cole no seu chat do Cowork com o Curador. Eu faço a análise ao vivo no Instagram.</p><div style="background:#161616;border:1px solid #333;border-radius:12px;padding:14px 16px;white-space:pre-wrap;font-family:monospace;font-size:12.5px;color:#e9dfce;margin-top:8px">'+esc(cmd)+'</div><button class="copybtn" data-full="'+esc(cmd)+'" onclick="copiarTxt(this)">Copiar comando</button> <a class="copybtn" style="text-decoration:none;display:inline-block" href="https://claude.ai" target="_blank" rel="noopener">Abrir Claude / Cowork</a></div>';
 }
-['temaInput','temaRoteiro','refHandle'].forEach(function(id){var e=document.getElementById(id);if(e)e.addEventListener('keydown',function(ev){if(ev.key==='Enter'){if(id==='temaInput')avaliarTema();else if(id==='temaRoteiro')gerarRoteiro();else analisarRef();}});});
-document.getElementById('apiKey').addEventListener('keydown',function(ev){if(ev.key==='Enter')connectClaude();});
-(function(){try{
-  var k=localStorage.getItem('curador_key'); var prov=localStorage.getItem('curador_provider')||'claude';
-  var ps=document.getElementById('provider'); if(ps)ps.value=prov;
-  if(k){document.getElementById('apiKey').value=k; connectClaude();}
-}catch(e){}
-var ms=document.getElementById('modelSel'); if(ms)ms.addEventListener('change',function(){try{localStorage.setItem('curador_model',ms.value);}catch(e){}});
-var fk=document.getElementById('forgetKey'); if(fk)fk.addEventListener('click',function(ev){ev.preventDefault();try{localStorage.removeItem('curador_key');localStorage.removeItem('curador_provider');localStorage.removeItem('curador_model');}catch(e){}var st=document.getElementById('connStatus');st.textContent='● Chave esquecida';st.className='cst';document.getElementById('apiKey').value='';API.ready=false;});
+
+/* ===== init: restaura chave + tema, auto-conecta ===== */
+(function(){
+  try{var tm=localStorage.getItem('curador_tema');if(tm)document.getElementById('temaCentral').value=tm;}catch(e){}
+  try{var k=localStorage.getItem('curador_key'),prov=localStorage.getItem('curador_provider')||'claude';document.getElementById('provider').value=prov;if(k){document.getElementById('apiKey').value=k;connectClaude();}}catch(e){}
+  var ms=document.getElementById('modelSel');if(ms)ms.addEventListener('change',function(){try{localStorage.setItem('curador_model',ms.value);}catch(e){}});
+  var fk=document.getElementById('forgetKey');if(fk)fk.addEventListener('click',function(ev){ev.preventDefault();try{localStorage.removeItem('curador_key');localStorage.removeItem('curador_provider');localStorage.removeItem('curador_model');}catch(e){}var st=document.getElementById('connStatus');st.textContent='● Chave esquecida';st.className='cst';document.getElementById('apiKey').value='';API.ready=false;});
+  document.getElementById('apiKey').addEventListener('keydown',function(ev){if(ev.key==='Enter')connectClaude();});
 })();
 </script>
 </body>
