@@ -182,6 +182,7 @@
 <nav class="tabbar">
   <button class="active" data-tab="avaliador" onclick="switchTab(this)">⚖ Avaliar Tema</button>
   <button data-tab="gerador" onclick="switchTab(this)">🎬 Roteiros</button>
+  <button data-tab="aulas" onclick="switchTab(this)">🎓 Aulas</button>
   <button data-tab="legendas" onclick="switchTab(this)">✍️ Legendas & Hashtags</button>
   <button data-tab="evidencias" onclick="switchTab(this)">🔬 Evidências (PubMed)</button>
   <button data-tab="imagem" onclick="switchTab(this)">🎨 Direção de Arte</button>
@@ -198,6 +199,25 @@
   <p class="sub">Avaliação profunda do tema central: força, 4 dimensões, riscos CFM, 5 ângulos originais e plano de publicações — sempre com dicas de melhoria ao final.</p>
   <button class="go" id="btnAval" onclick="avaliarTema()">Avaliar tema central</button>
   <div class="outwrap" id="outAval"></div>
+</div></section>
+
+<section class="tabpane" id="tab-aulas"><div class="tool">
+  <div class="tk">IA · usa o tema central</div><h3>🎓 Aulas (roteiro para gravar)</h3>
+  <p class="sub">Transforma o tema central num roteiro de aula em <b>módulos curtos (~2–3 min cada)</b> pra você gravar — série pronta com gancho, corpo em teleprompter (1ª pessoa), <code>TELA:</code>, fechamento e dica de gravação. Público leigo por padrão.</p>
+  <div class="selrow">
+    <select id="aulaPublico">
+      <option value="leigo">Público: leigo / paciente (padrão)</option>
+      <option value="medicos">Público: médicos (condutas + evidência)</option>
+    </select>
+    <select id="aulaFormato">
+      <option value="serie">Série em módulos (padrão)</option>
+      <option value="curta">Aula curta única (~2–3 min)</option>
+      <option value="media">Aula média única (~5–7 min)</option>
+    </select>
+    <button class="go" id="btnAula" onclick="gerarAula()">🎓 Gerar aula</button>
+  </div>
+  <div class="handoff">Regras do Dr. Tenner aplicadas: liderar pela fisiologia (sem frases negativas), sem medicamentos no conteúdo leigo, aviso educativo em toda legenda e CTA de agendamento.</div>
+  <div class="outwrap" id="outAula"></div>
 </div></section>
 
 <section class="tabpane" id="tab-gerador"><div class="tool">
@@ -683,6 +703,70 @@ function pmCite(btn){
   if(navigator.clipboard)navigator.clipboard.writeText(ta.value);
   ta.style.display='none';
   var o=btn.textContent; btn.textContent='Copiado!'; setTimeout(function(){btn.textContent=o;},1400);
+}
+function buildAulaPrompt(t,publico,formato){
+  var isMed = publico==='medicos';
+  var fmt = formato==='curta' ? 'uma AULA CURTA UNICA de ~2 a 3 minutos (nao em serie), percorrendo o arco abaixo dentro do mesmo roteiro'
+          : formato==='media' ? 'uma AULA MEDIA UNICA de ~5 a 7 minutos, percorrendo o arco abaixo com mais profundidade'
+          : 'uma SERIE de modulos curtos — cada modulo e um video independente de ~2 a 3 minutos';
+  var p = 'Transforme o tema "'+t+'" em um ROTEIRO DE AULA para o Dr. Tenner Nunes GRAVAR em video (Reels/YouTube/serie).\n\n'
+    +'PUBLICO: '+(isMed?'MEDICOS.':'leigo/paciente.')+'\n'
+    +'FORMATO: '+fmt+'.\n\n'
+    +'Para CADA modulo (ou secao), entregue NESTA ordem:\n'
+    +'1) Titulo curto e chamativo.\n'
+    +'2) Objetivo (1 linha) e duracao estimada.\n'
+    +'3) GANCHO (0-8s): frase de abertura forte, olho na camera.\n'
+    +'4) CORPO: fala em tom de TELEPROMPTER, natural, 1a pessoa, frases curtas, ritmo de corte.\n'
+    +'5) Linhas iniciadas por "TELA:" com o texto que aparece na edicao.\n'
+    +'6) FECHAMENTO que puxa o proximo modulo.\n'
+    +'7) Dica de gravacao curta.\n'
+    +'Ao final de cada modulo, inclua uma linha "Legenda:" curta que TERMINA com o aviso: "conteudo educativo, nao substitui consulta; cada caso e individual."\n\n'
+    +'ARCO (uma etapa por modulo, nesta ordem): 1) Gancho + nomear o problema; 2) Mecanismo (o que muda no corpo); 3) Consequencia (por que importa / por que descompensa); 4) Sintoma sensivel ou duvida comum (acolhimento); 5) "Tem tratamento" + CTA de avaliacao.\n\n'
+    +'REGRAS OBRIGATORIAS: NUNCA use frases negativas do tipo "nao e preguica / falta de vontade / falta de esforco / frescura" — lidere SEMPRE pela fisiologia e enquadre no positivo (ex.: "o corpo mudou as regras"); tom de autoridade acessivel, acolhedor, direto, olho no olho; acolher sem alarmar, esperanca ancorada em fisiologia (nada de cura/milagre/garantido); encerrar a serie com CTA de agendamento (@drtennernunes / "agende sua avaliacao"). Ao final de tudo, sugira a ORDEM e a CADENCIA de publicacao (ex.: 1 modulo por semana).';
+  if(isMed){
+    p += '\n\nPOR SER PARA MEDICOS: pode citar moleculas e doses. Traga a CONCLUSAO primeiro; condutas com dose/via/frequencia/reavaliacao; e NIVEL DE EVIDENCIA explicito para cada conduta — (a) bula/diretriz, (b) off-label robusto, (c) pratica/extrapolacao, (d) especulativo. Custo/acesso no Brasil quando relevante. Sinalize dados que precisam de checagem atual (preco/disponibilidade ANVISA).';
+  } else {
+    p += '\n\nPOR SER LEIGO: NAO cite medicamentos, moleculas, doses nem marcas. Fale de MECANISMO e do CAMINHO de solucao, nao de prescricao.';
+  }
+  p += '\n\nEntregue em Markdown limpo: comece com "# Serie: '+t+'" (ou "# Aula: '+t+'" se for unica) e cada modulo como "## Modulo N — <titulo>".';
+  return p;
+}
+async function gerarAula(){
+  if(needTema('outAula'))return;
+  if(!API.ready){document.getElementById('outAula').innerHTML='<div class="needconn">O servidor ainda nao tem a chave configurada. Clique em Recarregar modelos.</div>';return;}
+  var publico=document.getElementById('aulaPublico').value;
+  var formato=document.getElementById('aulaFormato').value;
+  var t=getTema();
+  var btn=document.getElementById('btnAula'),out=document.getElementById('outAula');
+  btn.disabled=true;out.innerHTML=loading('Escrevendo o roteiro da aula ('+(publico==='medicos'?'medicos':'leigo')+')...');
+  try{
+    var txt=await ask(buildAulaPrompt(t,publico,formato),4200);
+    window.__aulaMd=txt||'';
+    out.innerHTML='<div class="mdout">'+md(txt)+'</div>'
+      +'<div class="imgbar" style="margin-top:12px">'
+      +'<a class="go" onclick="aulaDownload()">Baixar .md</a>'
+      +'<button class="go alt" onclick="aulaExtra(\'medicos\',this)">Versao para medicos</button>'
+      +'<button class="go alt" onclick="aulaExtra(\'captions\',this)">Captions + hashtags</button>'
+      +'<button class="go alt" onclick="aulaExtra(\'15s\',this)">Versao 15s</button>'
+      +'<button class="go alt" onclick="gerarAula()">Gerar outra</button>'
+      +'</div><div id="aulaExtraOut"></div>';
+  }catch(e){out.innerHTML='<div class="errbox"><b>Erro:</b> '+esc(e.message)+'</div>';}
+  finally{btn.disabled=false;}
+}
+function aulaDownload(){
+  var t=getTema();var data='data:text/markdown;charset=utf-8,'+encodeURIComponent(window.__aulaMd||'');
+  var a=document.createElement('a');a.href=data;a.download=fnameFrom(t,'-aula')+'.md';document.body.appendChild(a);a.click();a.remove();
+}
+async function aulaExtra(kind,btn){
+  if(kind==='medicos'){document.getElementById('aulaPublico').value='medicos';return gerarAula();}
+  var t=getTema();var ex=document.getElementById('aulaExtraOut');
+  var o=btn.textContent;btn.disabled=true;btn.textContent='Gerando...';
+  var p = kind==='captions'
+    ? 'Escreva as LEGENDAS (captions) prontas para postar CADA modulo da serie sobre "'+t+'". Cada legenda: curta, tom acolhedor, lidere pela fisiologia (sem frases negativas), CTA de agendamento @drtennernunes, 6 a 10 hashtags relevantes ao final, e OBRIGATORIAMENTE o aviso "conteudo educativo, nao substitui consulta; cada caso e individual." Markdown, uma legenda por modulo.'
+    : 'Comprima a abertura da serie sobre "'+t+'" em UM roteiro de 15 SEGUNDOS para Reels (publico leigo): gancho de 0-3s, corpo enxuto em 1a pessoa e CTA de agendamento. Sem citar medicamentos/doses/marcas. Lidere pela fisiologia, sem frases negativas. Inclua linhas "TELA:". Markdown.';
+  try{var txt=await ask(p,1800);ex.innerHTML='<div class="mdout" style="margin-top:12px">'+md(txt)+'</div>';ex.scrollIntoView({block:'start'});}
+  catch(e){ex.innerHTML='<div class="errbox">Erro: '+esc(e.message)+'</div>';}
+  btn.disabled=false;btn.textContent=o;
 }
 function analisarRef(){
   var handle=document.getElementById('refHandle').value.trim(),sample=document.getElementById('refSample').value.trim(),asps=[];
