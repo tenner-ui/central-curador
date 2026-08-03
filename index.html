@@ -235,8 +235,23 @@
 <section class="tabpane" id="tab-evidencias"><div class="tool">
   <div class="tk">API PubMed · usa o tema central</div><h3>🔬 Evidências (PubMed)</h3>
   <p class="sub">Busca artigos científicos reais no PubMed sobre o tema central (funciona sem chave de IA). Se você estiver conectado, a IA ainda sugere como usar as evidências num post, dentro do CFM.</p>
-  <button class="go" id="btnPub" onclick="buscarPubMed()">Buscar evidências</button>
-  <div class="handoff">Dica: termos em inglês trazem mais resultados. Se conectado, a IA converte o tema automaticamente.</div>
+  <div class="selrow" style="margin-bottom:10px">
+    <input type="text" id="pmQuery" placeholder="Refinar busca (opcional) — vazio usa o tema central">
+  </div>
+  <div class="selrow">
+    <select id="pmTipo">
+      <option value="">Todos os tipos</option>
+      <option value="review">Revisões e meta-análises</option>
+      <option value="rct">Ensaios clínicos randomizados</option>
+    </select>
+    <select id="pmPeriodo">
+      <option value="">Qualquer período</option>
+      <option value="5">Últimos 5 anos</option>
+      <option value="10">Últimos 10 anos</option>
+    </select>
+    <button class="go" id="btnPub" onclick="buscarPubMed()">🔬 Buscar evidências</button>
+  </div>
+  <div class="handoff">Fonte oficial: PubMed / NCBI E-utilities. A IA converte o tema para inglês automaticamente quando conectada (busca em inglês traz mais resultados).</div>
   <div class="outwrap" id="outPub"></div>
 </div></section>
 
@@ -602,6 +617,72 @@ async function gerarPacote(){
     out.innerHTML=pacoteHTML(t,cap,mediaHtml);
   }catch(e){out.innerHTML='<div class="errbox"><b>Erro:</b> '+esc(e.message)+'</div>';}
   finally{btn.disabled=false;}
+}
+async function buscarPubMed(){
+  var out=document.getElementById('outPub'), btn=document.getElementById('btnPub');
+  var manual=(document.getElementById('pmQuery').value||'').trim();
+  var tema=getTema();
+  if(!manual && !tema){ out.innerHTML='<div class="needconn">Defina o tema central no topo, ou digite uma busca no campo acima.</div>'; return; }
+  btn.disabled=true; out.innerHTML=loading('Preparando a busca...');
+  try{
+    var base=manual;
+    if(!base){
+      base=tema;
+      if(API.ready){
+        try{ var q=await ask('Converta o tema "'+tema+'" em uma QUERY de busca do PubMed em INGLES, curta e eficaz (use termos MeSH e operadores AND/OR quando ajudar). Responda APENAS com a query, sem aspas e sem explicacao.',150); if(q){ q=q.replace(/["`]/g,'').trim().split(String.fromCharCode(10))[0]; if(q) base=q; } }catch(e){}
+      }
+    }
+    var tipo=document.getElementById('pmTipo').value;
+    var per=document.getElementById('pmPeriodo').value;
+    var term=base;
+    if(tipo==='review') term+=' AND (meta-analysis[pt] OR systematic review[pt] OR review[pt])';
+    else if(tipo==='rct') term+=' AND (randomized controlled trial[pt])';
+    if(per){ var y=new Date().getFullYear(); term+=' AND ('+(y-parseInt(per,10))+'[dp] : '+y+'[dp])'; }
+    out.innerHTML=loading('Consultando o PubMed...');
+    var d=await callBackend({action:'pubmed',term:term,retmax:12});
+    if(d.error) throw new Error(d.error);
+    if(!d.items||!d.items.length){ out.innerHTML='<div class="needconn">Nenhum artigo encontrado. Tente refinar a busca (em inglês costuma trazer mais resultados).</div>'; btn.disabled=false; return; }
+    var head='<div class="carhead"><b>🔬 '+d.count+' de '+d.total+' resultados</b> <span class="tk">'+esc(term)+'</span></div>';
+    var list=d.items.map(function(it){
+      var doiLink=it.doi?(' · <a href="https://doi.org/'+encodeURIComponent(it.doi)+'" target="_blank" rel="noopener">DOI</a>'):'';
+      var meta=[it.journal,it.year].filter(Boolean).join(' · ');
+      var types=it.types?('<div style="color:#9a6b1f;font-size:11.5px;font-family:Helvetica Neue,Arial,sans-serif;margin-top:3px">'+esc(it.types)+'</div>'):'';
+      var cite=it.authors+'. '+it.title+' '+it.journal+'. '+it.year+'.'+(it.doi?(' doi:'+it.doi):'')+' PMID:'+it.pmid+'. '+it.url;
+      return '<div class="refitem">'
+        +'<b><a href="'+it.url+'" target="_blank" rel="noopener" style="color:#1a1a1a">'+esc(it.title)+'</a></b>'
+        +'<div class="meta">'+esc(it.authors)+'</div>'
+        +'<div class="meta">'+esc(meta)+' · <a href="'+it.url+'" target="_blank" rel="noopener">PubMed</a>'+doiLink+'</div>'
+        +types
+        +'<div class="imgbar" style="margin-top:8px;gap:8px">'
+          +'<button class="go alt" style="padding:7px 12px;font-size:12.5px" onclick="pmAbstract(\''+it.pmid+'\',this)">Ver resumo</button>'
+          +'<button class="go alt" style="padding:7px 12px;font-size:12.5px" onclick="pmCite(this)">Copiar citação</button>'
+        +'</div>'
+        +'<div class="pmabs" id="abs-'+it.pmid+'" style="display:none;white-space:pre-wrap;background:#f7f2e9;border-radius:10px;padding:12px;margin-top:8px;font-size:13px;color:#2b2620;max-height:280px;overflow:auto"></div>'
+        +'<textarea class="pmcite" style="display:none">'+esc(cite)+'</textarea>'
+        +'</div>';
+    }).join('');
+    out.innerHTML='<div class="mdout">'+head+list+'</div>';
+  }catch(e){ out.innerHTML='<div class="errbox"><b>Erro:</b> '+esc(e.message)+'</div>'; }
+  finally{ btn.disabled=false; }
+}
+async function pmAbstract(pmid,btn){
+  var box=document.getElementById('abs-'+pmid);
+  if(box.style.display!=='none'){ box.style.display='none'; btn.textContent='Ver resumo'; return; }
+  if(!box.dataset.loaded){
+    btn.disabled=true; var o=btn.textContent; btn.textContent='Carregando...';
+    try{ var d=await callBackend({action:'pubmed_abstract',pmid:pmid}); box.textContent=(d.abstract||'Resumo indisponivel.'); box.dataset.loaded='1'; }
+    catch(e){ box.textContent='Falha ao carregar o resumo.'; }
+    btn.disabled=false; btn.textContent=o;
+  }
+  box.style.display='block'; btn.textContent='Ocultar resumo';
+}
+function pmCite(btn){
+  var ta=btn.closest('.refitem').querySelector('.pmcite');
+  ta.style.display='block'; ta.select();
+  try{document.execCommand('copy');}catch(e){}
+  if(navigator.clipboard)navigator.clipboard.writeText(ta.value);
+  ta.style.display='none';
+  var o=btn.textContent; btn.textContent='Copiado!'; setTimeout(function(){btn.textContent=o;},1400);
 }
 function analisarRef(){
   var handle=document.getElementById('refHandle').value.trim(),sample=document.getElementById('refSample').value.trim(),asps=[];
