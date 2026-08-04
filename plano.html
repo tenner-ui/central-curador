@@ -130,6 +130,7 @@ async function gerarRoteiro(ix){
     var d=await r.json(); txt=d.text||'';
     if(!txt){ var r2=await fetch(CURADOR,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({provider:'claude',model:'claude-sonnet-5',system:CUR_SYS,prompt:prompt,max_tokens:2200})}); var d2=await r2.json(); txt=d2.text||''; }
   }catch(e){ txt=''; }
+  txt=String(txt).replace(/```markdown/gi,'').replace(/```/g,'').trim();
   if(!txt){ box.innerHTML='<span style="color:#b00">Não consegui gerar agora. <button class="go alt" onclick="retryRot('+ix+')">Tentar de novo</button></span>'; card.dataset.gen=''; return; }
   try{localStorage.setItem(key,txt);}catch(e){}
   box.innerHTML=render_rot(txt);
