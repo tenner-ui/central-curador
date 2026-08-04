@@ -240,9 +240,10 @@
   </div>
   <div id="atlasLog" style="margin-top:14px;max-height:60vh;overflow:auto;display:flex;flex-direction:column;gap:12px"></div>
   <div class="selrow" style="margin-top:12px;align-items:stretch">
-    <textarea id="atlasIn" rows="2" placeholder="Fale com o ATLAS ou digite um comando — ex.: cole seus Insights dos últimos 90 dias" style="flex:1;min-height:54px" onkeydown="if(event.key==='Enter'&&(event.ctrlKey||event.metaKey)){event.preventDefault();atlasSend();}"></textarea>
-    <button class="go" id="btnAtlas" onclick="atlasSend()">Enviar</button>
+    <textarea id="atlasIn" rows="2" placeholder="Fale com o ATLAS, cite um @perfil pra ele analisar, ou anexe um print dos Insights" style="flex:1;min-height:54px" onkeydown="if(event.key==='Enter'&&(event.ctrlKey||event.metaKey)){event.preventDefault();atlasSend();}"></textarea>
+    <input type="file" id="atlasImgIn" accept="image/*" style="display:none" onchange="atlasPickImg(this)"><button class="go alt" title="Anexar print dos Insights" style="padding:0 14px" onclick="document.getElementById('atlasImgIn').click()">📎 Print</button><button class="go" id="btnAtlas" onclick="atlasSend()">Enviar</button>
   </div>
+  <div id="atlasImgChip" style="display:none;margin-top:8px;font-size:12px;color:#e7c36b"></div>
   <div class="handoff">ATLAS decide e planeja; o CURADOR executa. Ele entrega plano, calendário e briefing — não escreve legenda nem roteiro. (Ctrl+Enter envia)</div>
 </div></section>
 
@@ -805,26 +806,48 @@ function atlasCmd(c){var i=document.getElementById('atlasIn');var last=c.slice(-
 async function atlasSend(forced){
   var i=document.getElementById('atlasIn');
   var msg=(forced!==undefined?forced:i.value).trim();
-  if(!msg)return;
+  var img=window.__atlasImg||null;
+  if(!msg && !img)return;
   if(!API.ready){atlasBubble('sys','O servidor ainda nao tem chave configurada. Clique em Recarregar modelos no topo.');return;}
   if(forced===undefined)i.value='';
-  if(!atlasStarted){atlasStarted=true;}
-  atlasBubble('user',msg);atlasHist.push({r:'user',t:msg});
+  var shown=(msg||'')+(img?('  \n_[print anexado: '+img.name+']_'):'');
+  atlasBubble('user',shown||'[print anexado]');
+  atlasHist.push({r:'user',t:msg||'[print de Insights anexado]'});
   var think=atlasBubble('atlas','_formulando resposta..._');
-  var convo=atlasHist.map(function(m){return (m.r==='user'?'DR. TENNER':'ATLAS')+': '+m.t;}).join('\n\n');
-  var prompt='Historico da conversa (use como memoria). Responda AGORA como ATLAS a ultima fala do DR. TENNER:\n\n'+convo;
   var btn=document.getElementById('btnAtlas');btn.disabled=true;
+  var dataBlock='';
+  var hs=(msg.match(/@([A-Za-z0-9._]+)/g)||[]).map(function(v){return v.replace('@','');});
+  hs=hs.filter(function(v,ix){return hs.indexOf(v)===ix;}).slice(0,6);
+  if(hs.length){
+    think.innerHTML=atlasHeader('atlas')+atlasBody('atlas','_coletando dados publicos de '+hs.map(function(h){return '@'+h;}).join(', ')+'..._');
+    try{
+      var sr=await fetch(ATLAS_URL,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'scan',handles:hs})});
+      var sd=await sr.json();var rs=(sd&&sd.results)||[];
+      var lines=rs.map(function(p){ if(p.ok){return '@'+p.handle+': '+(p.name||'')+' | seguidores='+(p.followers!=null?p.followers:'?')+' | seguindo='+(p.following!=null?p.following:'?')+' | posts='+(p.posts!=null?p.posts:'?')+(p.verified?' | verificado':'')+(p.bio?(' | bio: '+String(p.bio).replace(/\s+/g,' ').slice(0,160)):''); } return '@'+p.handle+': coleta automatica indisponivel ('+(p.note||'bloqueado pelo Instagram')+')'; });
+      dataBlock='DADOS PUBLICOS COLETADOS AUTOMATICAMENTE (use como base; para o que vier indisponivel, peca 1 print dos Insights):\n'+lines.join('\n')+'\n\n';
+    }catch(e){}
+  }
+  var convo=atlasHist.map(function(m){return (m.r==='user'?'DR. TENNER':'ATLAS')+': '+m.t;}).join('\n\n');
+  var prompt=dataBlock+'Historico da conversa (use como memoria). '+(img?'O DR. TENNER anexou um PRINT (imagem) dos Insights/perfil: LEIA os numeros e informacoes visiveis na imagem e use-os no diagnostico, agindo sozinho, sem repetir pedidos do que ja da pra ver. ':'')+'Responda AGORA como ATLAS a ultima fala do DR. TENNER:\n\n'+convo;
   try{
-    var model=document.getElementById('modelSel').value;
-    var r=await fetch(ATLAS_URL,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({provider:API.provider,model:model,prompt:prompt,max_tokens:4200})});
+    var body={provider:API.provider,model:document.getElementById('modelSel').value,prompt:prompt,max_tokens:4200};
+    if(img){body.image=img.b64;body.mime=img.mime;}
+    var r=await fetch(ATLAS_URL,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
     var d=await r.json();if(d.error)throw new Error(d.error);
     var out=d.text||'(sem resposta)';
     think.innerHTML=atlasHeader('atlas')+atlasBody('atlas',out)+atlasHandoffBar(out);
     atlasHist.push({r:'atlas',t:out});
     var log=document.getElementById('atlasLog');log.scrollTop=log.scrollHeight;
   }catch(e){think.innerHTML='<div class="errbox">Erro: '+esc(e.message)+'</div>';}
-  finally{btn.disabled=false;}
+  finally{btn.disabled=false;atlasClearImg();}
 }
+function atlasPickImg(inp){
+  var f=inp.files&&inp.files[0];if(!f)return;
+  var rd=new FileReader();
+  rd.onload=function(){var res=rd.result;window.__atlasImg={b64:res.split(',')[1],mime:f.type||'image/png',name:f.name};var chip=document.getElementById('atlasImgChip');chip.style.display='';chip.innerHTML='📎 '+esc(f.name)+' anexado <button class="go alt" style="padding:1px 8px;font-size:11px;margin-left:6px" onclick="atlasClearImg()">remover</button>';};
+  rd.readAsDataURL(f);
+}
+function atlasClearImg(){window.__atlasImg=null;var inp=document.getElementById('atlasImgIn');if(inp)inp.value='';var chip=document.getElementById('atlasImgChip');if(chip){chip.style.display='none';chip.innerHTML='';}}
 function atlasHandoffBar(text){
   if(!/BRIEFING/i.test(text) || !/TEMA\s*:/i.test(text)) return '';
   return '<div class="atlasHandoff" style="margin-top:10px"><textarea class="atlasRaw" style="display:none">'+esc(text)+'</textarea>'
