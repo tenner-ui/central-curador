@@ -28,17 +28,24 @@
   .risco{font-family:"Helvetica Neue",Arial,sans-serif;font-size:11px;font-weight:700;}
   .risco.VERDE{color:#2e7d32;} .risco.AMARELO{color:#b8860b;}
   .card h3{margin:6px 0 2px;font-size:17px;color:#1a1a1a;}
+  .card h3 .arrow{float:right;color:var(--gold);font-size:14px;}
   .meta{color:var(--muted);font-size:12.5px;font-family:"Helvetica Neue",Arial,sans-serif;}
   .body{display:none;margin-top:12px;border-top:1px dashed var(--line);padding-top:12px;}
   .card.open .body{display:block;}
-  .body h4{color:#9a6b1f;font-size:13px;font-family:"Helvetica Neue",Arial,sans-serif;text-transform:uppercase;letter-spacing:.03em;margin:14px 0 4px;}
-  .body p{margin:7px 0;font-size:14.5px;} .body ul,.body ol{margin:6px 0 6px 2px;padding-left:20px;} .body li{margin:4px 0;font-size:14.5px;}
-  .body b{color:#1a1a1a;} .body hr{border:none;border-top:1px solid var(--line);margin:12px 0;}
+  .lbl{font-family:"Helvetica Neue",Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:2px 0 6px;}
+  .rot{margin-top:14px;background:#fbf7ef;border:1px solid #ece0c8;border-radius:12px;padding:14px 16px;}
+  .rot .lbl{color:#8a5a12;}
+  .mdc h4{color:#9a6b1f;font-size:13px;font-family:"Helvetica Neue",Arial,sans-serif;text-transform:uppercase;letter-spacing:.03em;margin:14px 0 4px;}
+  .mdc p{margin:7px 0;font-size:14.5px;} .mdc ul,.mdc ol{margin:6px 0 6px 2px;padding-left:20px;} .mdc li{margin:4px 0;font-size:14.5px;}
+  .mdc b{color:#1a1a1a;} .mdc hr{border:none;border-top:1px solid var(--line);margin:12px 0;} .mdc code{background:#f1e7d5;padding:1px 5px;border-radius:5px;font-size:13px;}
   .go{background:var(--gold);color:#2a1207;border:none;border-radius:9px;padding:8px 15px;font-size:13px;font-weight:700;cursor:pointer;font-family:"Helvetica Neue",Arial,sans-serif;text-decoration:none;display:inline-block;}
   .go.alt{background:transparent;border:1px solid var(--gold);color:#8a5a12;}
+  .go:disabled{opacity:.5;cursor:progress;}
   .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:16px 0;}
   .exp{font-family:"Helvetica Neue",Arial,sans-serif;font-size:12px;color:var(--muted);}
   .loading{padding:40px;text-align:center;color:var(--muted);}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid #d8c7a6;border-top-color:var(--gold);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:6px;}
+  @keyframes sp{to{transform:rotate(360deg);}}
   @media(max-width:640px){.top h1{font-size:21px;}.card h3{font-size:16px;}}
 </style>
 </head>
@@ -59,7 +66,9 @@
 </div>
 <script>
 var STORE='https://qqjebmisnlrlzglfuftf.supabase.co/functions/v1/planostore';
-var PLANO=null, MES=0, FMT='todos';
+var CURADOR='https://qqjebmisnlrlzglfuftf.supabase.co/functions/v1/curador-ai';
+var CUR_SYS='Voce e o roteirista de conteudo do Dr. Tenner Nunes (@drtennernunes), medico pos-graduando em Endocrinologia e Metabologia (NUNCA "especialista"). Escreve roteiros PRONTOS PARA GRAVAR, em portugues do Brasil, tom autoridade acessivel, acolhedor, direto, frases curtas. Compliance CFM obrigatorio: sem promessa/quilos/prazo; medicamento so por classe (analogo de GLP-1/GIP), nunca marca; sempre ancora de individualizacao/avaliacao medica; sem cliches; liderar pela fisiologia, sem frases negativas. Assinatura e aviso educativo na legenda.';
+var PLANO=null, MES=0, FMT='todos', PECAS=[];
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function md(t){var L=String(t||'').replace(/\r/g,'').replace(/\\n/g,'\n').split('\n'),h='',ul=0,ol=0;function c(){if(ul){h+='</ul>';ul=0;}if(ol){h+='</ol>';ol=0;}}function il(s){s=esc(s);s=s.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');s=s.replace(/`([^`]+)`/g,'<code>$1</code>');return s;}for(var i=0;i<L.length;i++){var x=L[i].trim();if(!x){c();continue;}if(/^---+$/.test(x)){c();h+='<hr>';continue;}var hm=/^(#{1,6})\s+(.*)$/.exec(x);if(hm){c();h+='<h4>'+il(hm[2])+'</h4>';continue;}var um=/^[-*]\s+(.*)$/.exec(x);if(um){if(!ul){c();h+='<ul>';ul=1;}h+='<li>'+il(um[1])+'</li>';continue;}var om=/^\d+[.)]\s+(.*)$/.exec(x);if(om){if(!ol){c();h+='<ol>';ol=1;}h+='<li>'+il(om[1])+'</li>';continue;}c();h+='<p>'+il(x)+'</p>';}c();return h;}
 function fmtClass(f){f=(f||'').toLowerCase();if(f.indexOf('reel')>-1)return 'b-reel';if(f.indexOf('carrossel')>-1)return 'b-carrossel';return 'b-feed';}
@@ -67,31 +76,67 @@ async function load(){
   try{var r=await fetch(STORE,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'get',key:'plano50k'})});var d=await r.json();PLANO=d.plano;}catch(e){}
   if(!PLANO||!PLANO.meses){document.getElementById('content').innerHTML='<div class="loading">Plano ainda não disponível. Gere pelo ATLAS e recarregue.</div>';return;}
   document.getElementById('subhead').textContent='Meta: '+PLANO.meta+' · Série "'+(PLANO.serie||'')+'" · gerado em '+(PLANO.gerado_em||'');
-  var mb=document.getElementById('mbar');mb.innerHTML=PLANO.meses.map(function(m,i){return '<button class="'+(i===0?'active':'')+'" onclick="setMes('+i+',this)">'+esc(m.mes||('Mês '+(i+1)))+'</button>';}).join('');
-  var fc=document.getElementById('fmtChips');fc.innerHTML=['todos','Reel','Carrossel','Feed'].map(function(f){return '<span class="chip'+(f==='todos'?' on':'')+'" onclick="setFmt(\''+f+'\',this)">'+(f==='todos'?'Todos':f)+'</span>';}).join('');
+  document.getElementById('mbar').innerHTML=PLANO.meses.map(function(m,i){return '<button class="'+(i===0?'active':'')+'" onclick="setMes('+i+',this)">'+esc(m.mes||('Mês '+(i+1)))+'</button>';}).join('');
+  document.getElementById('fmtChips').innerHTML=['todos','Reel','Carrossel','Feed'].map(function(f){return '<span class="chip'+(f==='todos'?' on':'')+'" onclick="setFmt(\''+f+'\',this)">'+(f==='todos'?'Todos':f)+'</span>';}).join('');
   render();
 }
 function setMes(i,btn){MES=i;[].forEach.call(document.querySelectorAll('#mbar button'),function(b){b.classList.remove('active');});btn.classList.add('active');render();}
 function setFmt(f,el){FMT=f;[].forEach.call(document.querySelectorAll('#fmtChips .chip'),function(c){c.classList.remove('on');});el.classList.add('on');render();}
 function render(){
   var m=PLANO.meses[MES];var out=document.getElementById('content');
-  var pecas=(m.pecas||[]).filter(function(p){return FMT==='todos'||String(p.formato||'').toLowerCase().indexOf(FMT.toLowerCase())>-1;});
+  PECAS=(m.pecas||[]).filter(function(p){return FMT==='todos'||String(p.formato||'').toLowerCase().indexOf(FMT.toLowerCase())>-1;});
   var html='<div class="foco"><b>Foco estratégico de '+esc(m.mes)+':</b> '+esc(m.foco||'')+'</div>';
-  html+='<div class="exp">'+pecas.length+' peças · clique numa peça para ver o conteúdo pronto</div>';
-  html+=pecas.map(function(p,ix){
-    return '<div class="card" id="c'+ix+'"><div class="h" onclick="document.getElementById(\'c'+ix+'\').classList.toggle(\'open\')">'
+  html+='<div class="exp">'+PECAS.length+' peças · clique numa peça para gerar o roteiro completo automaticamente</div>';
+  html+=PECAS.map(function(p,ix){
+    return '<div class="card" id="c'+ix+'" data-ix="'+ix+'"><div class="h" onclick="abrirPeca('+ix+')">'
       +'<span class="badge '+fmtClass(p.formato)+'">'+esc(p.formato)+'</span>'
       +'<span class="meta">'+esc(p.data||'')+(p.dia?(' · '+esc(p.dia)):'')+'</span>'
       +(p.serie?'<span class="meta">· '+esc(p.serie)+'</span>':'')
       +'<span class="risco '+(p.risco||'VERDE')+'">● '+esc(p.risco||'VERDE')+'</span></div>'
-      +'<h3>'+esc(p.tema||'(sem tema)')+'</h3>'
+      +'<h3>'+esc(p.tema||'(sem tema)')+' <span class="arrow">▸ clique p/ roteiro</span></h3>'
       +(p.pilar?'<div class="meta">Pilar: '+esc(p.pilar)+'</div>':'')
-      +'<div class="body"><div class="mdc">'+md(p.conteudo||p.roteiro||p.texto||'')+'</div>'
-      +'<div style="margin-top:10px"><button class="go alt" onclick="copiar(this)">Copiar conteúdo</button><textarea style="display:none">'+esc(p.conteudo||p.roteiro||p.texto||'')+'</textarea></div></div></div>';
+      +'<div class="body">'
+        +'<div class="lbl">Conteúdo base</div><div class="mdc">'+md(p.conteudo||p.roteiro||p.texto||'')+'</div>'
+        +'<div class="rot" id="rot'+ix+'"><div class="lbl">Roteiro completo</div><div class="rotbody meta">Abrindo…</div></div>'
+      +'</div></div>';
   }).join('');
   out.innerHTML=html;
 }
-function copiar(btn){var ta=btn.parentElement.querySelector('textarea');ta.style.display='block';ta.select();try{document.execCommand('copy');}catch(e){}if(navigator.clipboard)navigator.clipboard.writeText(ta.value);ta.style.display='none';var o=btn.textContent;btn.textContent='Copiado!';setTimeout(function(){btn.textContent=o;},1400);}
+function rotKey(p){return 'rot_'+(PLANO.meses[MES].mes||'')+'_'+(p.data||'')+'_'+String(p.tema||'').slice(0,40);}
+function abrirPeca(ix){
+  var card=document.getElementById('c'+ix);
+  var opening=!card.classList.contains('open');
+  card.classList.toggle('open');
+  if(opening && !card.dataset.gen){ gerarRoteiro(ix); }
+}
+async function gerarRoteiro(ix){
+  var p=PECAS[ix];var card=document.getElementById('c'+ix);var box=document.querySelector('#rot'+ix+' .rotbody');
+  var key=rotKey(p);
+  var cached=null;try{cached=localStorage.getItem(key);}catch(e){}
+  if(cached){ box.innerHTML=render_rot(cached); card.dataset.gen='1'; return; }
+  card.dataset.gen='1';
+  box.innerHTML='<span class="spin"></span> Gerando o roteiro completo…';
+  var fmt=(p.formato||'').toLowerCase();
+  var instru = fmt.indexOf('carrossel')>-1
+    ? 'Formato CARROSSEL. Entregue em Markdown: CAPA (frase de impacto), depois CARD 1..N (6 a 8 cards) com o texto pronto de cada card, e no fim a LEGENDA com 6-8 hashtags e o aviso educativo.'
+    : (fmt.indexOf('feed')>-1
+      ? 'Formato FEED (imagem unica). Entregue em Markdown: conceito visual da arte, texto sugerido na arte (curto), e a LEGENDA completa com 6-8 hashtags e aviso educativo.'
+      : 'Formato REEL. Entregue em Markdown: GANCHO (0-3s), ROTEIRO FALADO completo em teleprompter (1a pessoa, frases curtas) com marcacoes de tempo e sugestoes de TELA:, CTA (pergunta binaria que gera comentario), e LEGENDA com 6-8 hashtags e aviso educativo.');
+  var prompt='Expanda o item abaixo em um ROTEIRO COMPLETO e pronto para gravar/publicar.\n'
+    +'TEMA: '+(p.tema||'')+'\nPILAR: '+(p.pilar||'')+'\nSERIE: '+(p.serie||'-')+'\nCONTEUDO BASE (use como ponto de partida, pode melhorar): '+String(p.conteudo||p.roteiro||p.texto||'').slice(0,700)+'\n\n'+instru+'\nMantenha o compliance CFM. Responda apenas com o roteiro em Markdown.';
+  var txt='';
+  try{
+    var r=await fetch(CURADOR,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({provider:'gemini',model:'gemini-flash-latest',system:CUR_SYS,prompt:prompt,max_tokens:2200})});
+    var d=await r.json(); txt=d.text||'';
+    if(!txt){ var r2=await fetch(CURADOR,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({provider:'claude',model:'claude-sonnet-5',system:CUR_SYS,prompt:prompt,max_tokens:2200})}); var d2=await r2.json(); txt=d2.text||''; }
+  }catch(e){ txt=''; }
+  if(!txt){ box.innerHTML='<span style="color:#b00">Não consegui gerar agora. <button class="go alt" onclick="retryRot('+ix+')">Tentar de novo</button></span>'; card.dataset.gen=''; return; }
+  try{localStorage.setItem(key,txt);}catch(e){}
+  box.innerHTML=render_rot(txt);
+}
+function retryRot(ix){var card=document.getElementById('c'+ix);card.dataset.gen='';gerarRoteiro(ix);}
+function render_rot(txt){return '<div class="mdc">'+md(txt)+'</div><div style="margin-top:10px"><button class="go alt" onclick="copiarRot(this)">Copiar roteiro</button><textarea style="display:none">'+esc(txt)+'</textarea></div>';}
+function copiarRot(btn){var ta=btn.parentElement.querySelector('textarea');ta.style.display='block';ta.select();try{document.execCommand('copy');}catch(e){}if(navigator.clipboard)navigator.clipboard.writeText(ta.value);ta.style.display='none';var o=btn.textContent;btn.textContent='Copiado!';setTimeout(function(){btn.textContent=o;},1400);}
 function baixarMes(){var m=PLANO.meses[MES];var nl=String.fromCharCode(10);var t='# Plano '+m.mes+' — @drtennernunes'+nl+nl+'Foco: '+(m.foco||'')+nl+nl+(m.pecas||[]).map(function(p){return '## '+(p.data||'')+' · '+(p.formato||'')+' — '+(p.tema||'')+nl+'Risco: '+(p.risco||'')+' · Pilar: '+(p.pilar||'')+(p.serie?(' · '+p.serie):'')+nl+nl+String(p.conteudo||p.roteiro||p.texto||'').replace(/\\n/g,nl);}).join(nl+nl+'---'+nl+nl);var a=document.createElement('a');a.href='data:text/markdown;charset=utf-8,'+encodeURIComponent(t);a.download='plano-'+(m.mes||'mes')+'-drtennernunes.md';document.body.appendChild(a);a.click();a.remove();}
 load();
 </script>
