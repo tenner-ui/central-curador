@@ -186,6 +186,7 @@
   <button data-tab="plano" onclick="switchTab(this)">📋 Plano do Mês</button>
   <button class="active" data-tab="avaliador" onclick="switchTab(this)">⚖ Avaliar Tema</button>
   <button data-tab="gerador" onclick="switchTab(this)">🎬 Roteiros</button>
+  <button data-tab="stories" onclick="switchTab(this)">📲 Stories da Semana</button>
   <button data-tab="aulas" onclick="switchTab(this)">🎓 Aulas</button>
   <button data-tab="legendas" onclick="switchTab(this)">✍️ Legendas & Hashtags</button>
   <button data-tab="evidencias" onclick="switchTab(this)">🔬 Evidências (PubMed)</button>
@@ -281,6 +282,23 @@
   <div class="outwrap" id="outRot"></div>
 </div></section>
 
+<section class="tabpane" id="tab-stories"><div class="tool">
+  <div class="tk">Sequência semanal · puxa do Plano 50k</div><h3>📲 Stories da Semana</h3>
+  <p class="sub">Escolha o mês e a semana do Plano 50k (Ago→Dez) e gere a sequência completa de Stories (7–9 telas) que aquece e sustenta os posts daquela semana — abertura, mini-conteúdo, bastidor da clínica, enquete/quiz, prova social e CTA.</p>
+  <div class="selrow">
+    <select id="stMes"><option value="">Carregando meses…</option></select>
+    <select id="stSemana"><option value="">Semana…</option></select>
+    <select id="stConta">
+      <option value='pessoal (voz "eu", @drtennernunes)'>Voz pessoal (@drtennernunes)</option>
+      <option value='institucional (voz "nós", @instituto.vitality)'>Voz institucional (@instituto.vitality)</option>
+    </select>
+    <button class="go" id="btnStories" onclick="gerarStories()">📲 Gerar sequência de Stories</button>
+  </div>
+  <div class="handoff">Rascunho editável seguindo o compliance CFM (sem "especialista", molécula não marca, individualização, disclaimer educativo). Cada tela traz objetivo, texto na tela, figurinha e fala.</div>
+  <div id="stSemInfo" style="margin-top:10px"></div>
+  <div class="outwrap" id="outStories"></div>
+</div></section>
+
 <section class="tabpane" id="tab-legendas"><div class="tool">
   <div class="tk">IA · usa o tema central</div><h3>✍️ Legendas & Hashtags</h3>
   <p class="sub">3 variações de legenda prontas para o tema central, com gancho, CTA que gera comentário, nota de conformidade e hashtags.</p>
@@ -357,7 +375,7 @@ var LP=[['https://aistudio.google.com/','Google AI'],['https://opal.withgoogle.c
 document.getElementById('launchpad').innerHTML='<span class="lplab">Ferramentas de IA:</span>'+LP.map(function(l){return '<a href="'+l[0]+'" target="_blank" rel="noopener">'+l[1]+'</a>';}).join('');
 
 /* ===== tabs / tema / dicas ===== */
-function switchTab(btn){document.querySelectorAll('.tabbar button').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');document.querySelectorAll('.tabpane').forEach(function(p){p.classList.remove('active');});document.getElementById('tab-'+btn.getAttribute('data-tab')).classList.add('active');if(btn.getAttribute('data-tab')==='atlas'){atlasOpen();}if(btn.getAttribute('data-tab')==='plano'){try{if(planoGetCal())planoShow('avaliacao');}catch(e){}}}
+function switchTab(btn){document.querySelectorAll('.tabbar button').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');document.querySelectorAll('.tabpane').forEach(function(p){p.classList.remove('active');});document.getElementById('tab-'+btn.getAttribute('data-tab')).classList.add('active');if(btn.getAttribute('data-tab')==='atlas'){atlasOpen();}if(btn.getAttribute('data-tab')==='plano'){try{if(planoGetCal())planoShow('avaliacao');}catch(e){}}if(btn.getAttribute('data-tab')==='stories'){stInit();}}
 function getTema(){return document.getElementById('temaCentral').value.trim();}
 function setTema(el){document.getElementById('temaCentral').value=el.textContent;try{localStorage.setItem('curador_tema',el.textContent);}catch(e){}}
 document.getElementById('temaCentral').addEventListener('input',function(){try{localStorage.setItem('curador_tema',this.value);}catch(e){}});
@@ -743,6 +761,7 @@ async function aulaExtra(kind,btn){
   btn.disabled=false;btn.textContent=o;
 }
 var ATLAS_URL='https://qqjebmisnlrlzglfuftf.supabase.co/functions/v1/atlas';
+var STORE='https://qqjebmisnlrlzglfuftf.supabase.co/functions/v1/planostore';var STPLAN=null;var STWEEKS=[];
 var ATLAS_INIT='**ATLAS online.**\n\nEstrategista-chefe de marketing médico. Camada superior do CURADOR.\n\nAntes de planejar qualquer coisa, preciso de 3 blocos: **diagnóstico do perfil**, **benchmarks** e **objetivo**.\n\nComece pelo que você tiver agora. Se quiser ir direto ao ponto, mande os Insights dos últimos 90 dias e de 3 a 8 @ de médicos que você quer usar como referência.\n\nComandos: `/auditoria` `/benchmark` `/tese` `/arquitetura` `/calendario` `/eventos` `/metricas` `/briefing` `/revisar` `/risco` `/full`';
 var atlasHist=[]; var atlasStarted=false;
 function atlasOpen(){ if(atlasStarted)return; atlasStarted=true; var w=atlasBubble('atlas',ATLAS_INIT); atlasHist.push({r:'atlas',t:ATLAS_INIT}); }
@@ -898,6 +917,50 @@ function gerarComando(){
   var cmd='Curador, análise de referência AO VIVO no Instagram.\n\nAbra o Instagram (logado) e vá ao perfil @'+handle+'. Leia a bio, o grid e os posts de maior engajamento (uns 6 a 9), com números reais.\n\nFoque no que eu quero copiar: '+(asps.join(', ')||'aspectos gerais')+'.\n\nEntregue: (1) leitura estratégica; (2) plano de adaptação para a MINHA marca (Dr. Tenner Nunes — Médico, pós-graduando em Endocrinologia e Metabologia; CRM/RR 2920) com conformidade CFM (molécula não marca, sem "especialista", individualização, separação @drtennernunes x @instituto.vitality); (3) o que NÃO copiar; (4) 3 ideias originais já adaptadas.';
   if(sample)cmd+='\n\nTexto que copiei do perfil:\n"""\n'+sample+'\n"""';
   out.innerHTML='<div class="mdout"><h3>Comando pronto para o Cowork</h3><p>Copie e cole no seu chat do Cowork com o Curador. Eu faço a análise ao vivo no Instagram.</p><div style="background:#161616;border:1px solid #333;border-radius:12px;padding:14px 16px;white-space:pre-wrap;font-family:monospace;font-size:12.5px;color:#e9dfce;margin-top:8px">'+esc(cmd)+'</div><button class="copybtn" data-full="'+esc(cmd)+'" onclick="copiarTxt(this)">Copiar comando</button> <a class="copybtn" style="text-decoration:none;display:inline-block" href="https://claude.ai" target="_blank" rel="noopener">Abrir Claude / Cowork</a></div>';
+}
+
+/* ===== Stories da Semana (puxa do Plano 50k) ===== */
+async function stInit(){
+  if(STPLAN)return;
+  var msel=document.getElementById('stMes'),out=document.getElementById('outStories');
+  try{
+    var r=await fetch(STORE,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'get',key:'plano50k'})});
+    var d=await r.json();var p=(d&&d.plano)||d;var meses=(p&&p.meses)||[];
+    if(!meses.length){msel.innerHTML='<option value="">(plano vazio)</option>';if(out)out.innerHTML='<div class="needconn">O Plano 50k ainda não tem meses salvos.</div>';return;}
+    STPLAN=p;
+    msel.innerHTML=meses.map(function(m,i){return '<option value="'+i+'">'+esc(m.mes||('Mês '+(i+1)))+'</option>';}).join('');
+    msel.onchange=stFillSemanas;stFillSemanas();
+  }catch(e){msel.innerHTML='<option value="">(erro)</option>';if(out)out.innerHTML='<div class="errbox"><b>Não consegui carregar o Plano 50k:</b> '+esc(e.message)+'</div>';}
+}
+function stMonday(iso){var p=String(iso).split('-');var dt=new Date(Date.UTC(+p[0],(+p[1])-1,+p[2]));var wd=(dt.getUTCDay()+6)%7;dt.setUTCDate(dt.getUTCDate()-wd);return dt.toISOString().slice(0,10);}
+function stFmtBR(iso){var p=String(iso).split('-');return p[2]+'/'+p[1];}
+function stFillSemanas(){
+  var mi=parseInt(document.getElementById('stMes').value,10),ssel=document.getElementById('stSemana');
+  document.getElementById('stSemInfo').innerHTML='';document.getElementById('outStories').innerHTML='';
+  if(isNaN(mi)||!STPLAN){ssel.innerHTML='<option value="">Semana…</option>';return;}
+  var pecas=(((STPLAN.meses[mi]||{}).pecas)||[]).slice().filter(function(c){return c&&c.data;});
+  pecas.sort(function(a,b){return a.data<b.data?-1:1;});
+  var groups={},order=[];
+  pecas.forEach(function(c){var k=stMonday(c.data);if(!groups[k]){groups[k]=[];order.push(k);}groups[k].push(c);});
+  STWEEKS=order.map(function(k){return {key:k,pecas:groups[k]};});
+  if(!STWEEKS.length){ssel.innerHTML='<option value="">(sem peças)</option>';return;}
+  ssel.innerHTML=STWEEKS.map(function(w,i){var ds=w.pecas.map(function(c){return c.data;}),a=ds[0],b=ds[ds.length-1];var lbl='Semana '+(i+1)+' ('+stFmtBR(a)+(b&&b!==a?('–'+stFmtBR(b)):'')+')';return '<option value="'+i+'">'+esc(lbl)+'</option>';}).join('');
+  ssel.onchange=stShowInfo;stShowInfo();
+}
+function stShowInfo(){
+  var wi=parseInt(document.getElementById('stSemana').value,10),info=document.getElementById('stSemInfo');
+  if(isNaN(wi)||!STWEEKS[wi]){info.innerHTML='';return;}
+  var w=STWEEKS[wi];
+  info.innerHTML='<div class="handoff" style="margin-top:0">Base desta semana ('+w.pecas.length+' peça'+(w.pecas.length>1?'s':'')+'): '+w.pecas.map(function(c){return esc((c.formato||'')+' — '+(c.tema||''));}).join(' · ')+'</div>';
+}
+function gerarStories(){
+  var wi=parseInt(document.getElementById('stSemana').value,10),out=document.getElementById('outStories');
+  if(isNaN(wi)||!STWEEKS[wi]){out.innerHTML='<div class="needconn">Escolha o mês e a semana primeiro.</div>';return;}
+  var w=STWEEKS[wi],mes=(((STPLAN.meses[parseInt(document.getElementById('stMes').value,10)]||{}).mes)||''),voz=document.getElementById('stConta').value;
+  var NL=String.fromCharCode(10);
+  var base=w.pecas.map(function(c,i){return (i+1)+') ['+(c.formato||'')+'] '+(c.tema||'')+(c.gancho?(' | gancho: '+c.gancho):'')+(c.cta?(' | cta: '+c.cta):'');}).join(NL);
+  var prompt='Monte uma SEQUÊNCIA COMPLETA de STORIES do Instagram para UMA SEMANA (7 a 9 telas), na VOZ '+voz+', que aqueça e sustente os posts principais desta semana do Plano 50k.'+NL+NL+'MÊS: '+mes+NL+'PEÇAS-BASE DA SEMANA:'+NL+base+NL+NL+'A sequência deve ter arco: (1) tela de ABERTURA/gancho da semana; (2 e 3) mini-conteúdo educativo começando pela FISIOLOGIA; (4) BASTIDOR do Dr. Tenner como empresário e dono de clínica (Instituto Vitality) — nunca plantão/hospital; (5) figurinha de ENQUETE ou QUIZ com pergunta binária; (6) PROVA SOCIAL/autoridade SEM antes-e-depois e sem promessa; (7) chamada para o POST principal da semana; (8) CTA final (caixa de PERGUNTA ou agendamento com individualização). Distribua as telas ao longo dos dias da semana.'+NL+NL+'Para CADA story use este formato em Markdown:'+NL+'### Story N — [tipo] · [dia sugerido]'+NL+'- **Objetivo:** ...'+NL+'- **Visual/tela:** ...'+NL+'- **Texto na tela:** "..." (curto, grande)'+NL+'- **Figurinha:** enquete/quiz/pergunta/contagem/link — com as opções'+NL+'- **Fala/legenda:** 1–2 frases'+NL+NL+'Compliance CFM obrigatório: nada de "especialista"; medicamento pela molécula, nunca marca; nunca a palavra "soroterapia"; toda menção a tratamento com individualização + avaliação médica; sem promessa/quilos/prazo; registro educativo; assinatura correta (Médico — pós-graduando em Endocrinologia e Metabologia, CRM/RR 2920). Comece direto na Story 1.'+briefDirectives();
+  run('outStories','btnStories',prompt,4200);
 }
 
 /* ===== init: restaura tema/provedor, carrega modelos do backend ===== */
