@@ -182,14 +182,12 @@
 
 <nav class="tabbar">
   <button data-tab="atlas" onclick="switchTab(this)">🧭 ATLAS</button>
+  <button data-tab="plano" onclick="switchTab(this)">📋 Plano do Mês</button>
   <button class="active" data-tab="avaliador" onclick="switchTab(this)">⚖ Avaliar Tema</button>
   <button data-tab="gerador" onclick="switchTab(this)">🎬 Roteiros</button>
   <button data-tab="aulas" onclick="switchTab(this)">🎓 Aulas</button>
   <button data-tab="legendas" onclick="switchTab(this)">✍️ Legendas & Hashtags</button>
   <button data-tab="evidencias" onclick="switchTab(this)">🔬 Evidências (PubMed)</button>
-  <button data-tab="imagem" onclick="switchTab(this)">🎨 Direção de Arte</button>
-  <button data-tab="video" onclick="switchTab(this)">🎬 Vídeo (IA)</button>
-  <button data-tab="publicacao" onclick="switchTab(this)">📤 Publicação</button>
   <button data-tab="referencia" onclick="switchTab(this)">🔎 Analisar Referência</button>
   <button data-tab="mais" onclick="switchTab(this)">➕ Mais integrações</button>
 </nav>
@@ -247,6 +245,24 @@
   <div class="handoff">ATLAS decide e planeja; o CURADOR executa. Ele entrega plano, calendário e briefing — não escreve legenda nem roteiro. (Ctrl+Enter envia)</div>
 </div></section>
 
+<section class="tabpane" id="tab-plano"><div class="tool">
+  <div class="tk">Gerado pelo ATLAS · @drtennernunes</div><h3>📋 Plano do Mês</h3>
+  <p class="sub">Exporta a avaliação do ATLAS e gera o plano do mês dividido por formato. Fica salvo neste navegador e pode ser baixado em .md.</p>
+  <div class="selrow">
+    <button class="go" id="btnPlano" onclick="planoExport()">📤 Exportar avaliação → gerar plano</button>
+    <button class="go alt" onclick="planoBaixar()">Baixar .md</button>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:14px" id="planoSubtabs">
+    <button class="go alt psub" data-p="avaliacao" onclick="planoShow('avaliacao',this)">Avaliação</button>
+    <button class="go alt psub" data-p="reels" onclick="planoShow('reels',this)">Reels</button>
+    <button class="go alt psub" data-p="feed" onclick="planoShow('feed',this)">Feed</button>
+    <button class="go alt psub" data-p="carrossel" onclick="planoShow('carrossel',this)">Carrossel</button>
+    <button class="go alt psub" data-p="stories" onclick="planoShow('stories',this)">Stories</button>
+  </div>
+  <div class="handoff">A avaliação vem da aba 🧭 ATLAS. Cada item tem "▶ Roteirizar no CURADOR" que leva tema+gancho pros Roteiros.</div>
+  <div class="outwrap" id="outPlano"></div>
+</div></section>
+
 <section class="tabpane" id="tab-gerador"><div class="tool">
   <div class="tk">IA · usa o tema central</div><h3>🎬 Gerador de Roteiros</h3>
   <p class="sub">Roteiro original e viral sobre o tema central — gancho, desenvolvimento, CTA, legenda e hashtags.</p>
@@ -302,63 +318,6 @@
   <div class="outwrap" id="outPub"></div>
 </div></section>
 
-<section class="tabpane" id="tab-imagem"><div class="tool">
-  <div class="tk">IA · usa o tema central</div><h3>🎨 Direção de Arte &amp; Imagem</h3>
-  <p class="sub">Gera o conceito visual do post na identidade da marca (verde + dourado, editorial) e agora <b>renderiza a imagem de verdade</b> pela IA — pronta para baixar e usar.</p>
-  <div class="selrow">
-    <select id="fmtImg">
-      <option value="capa de carrossel (1080x1350)">Capa de carrossel</option>
-      <option value="post de feed (1080x1080)">Post de feed</option>
-      <option value="story (1080x1920)">Story</option>
-    </select>
-    <button class="go alt" id="btnImg" onclick="gerarArte()">📝 Direção de arte (texto)</button>
-    <button class="go" id="btnImgGen" onclick="gerarImagem()">🖼 Gerar imagem</button>
-    <select id="nSlides" title="Número de slides"><option value="5">5 slides</option><option value="6" selected>6 slides</option><option value="7">7 slides</option><option value="8">8 slides</option></select>
-    <button class="go" id="btnCarrossel" onclick="gerarCarrossel()">🎠 Gerar carrossel completo</button>
-  </div>
-  <p class="sub" style="margin:6px 0 0;font-size:12.5px;opacity:.8">💡 Dica: o botão <b>Direção de arte</b> te dá o conceito e um prompt refinado; o botão <b>Gerar imagem</b> cria a arte direto. Pra imagem com base num conceito específico, gere o texto primeiro e depois clique em Gerar imagem.</p>
-  <div class="outwrap" id="outImgArt"></div>
-  <div class="outwrap" id="outCarrossel"></div>
-  <div class="outwrap" id="outImg"></div>
-</div></section>
-
-<section class="tabpane" id="tab-video"><div class="tool">
-  <div class="tk">IA · usa o tema central</div><h3>🎬 Gerador de Vídeos</h3>
-  <p class="sub">Cria um vídeo sobre o tema central em 3 modos. Sai pronto para baixar (9:16 para Reels/Stories), na identidade da marca.</p>
-  <div class="selrow">
-    <select id="vidModo">
-      <option value="veo">Clipe IA (Veo) · cena ~8s</option>
-      <option value="avatar">Avatar falante (HeyGen)</option>
-      <option value="slideshow">Slideshow narrado (imagens + voz)</option>
-    </select>
-    <select id="vidAspect">
-      <option value="9:16">Vertical 9:16 (Reels/Stories)</option>
-      <option value="1:1">Quadrado 1:1</option>
-      <option value="16:9">Horizontal 16:9</option>
-    </select>
-    <button class="go" id="btnVideo" onclick="gerarVideo()">🎬 Gerar vídeo</button>
-  </div>
-  <p class="sub" style="margin:8px 0 0;font-size:12.5px;opacity:.85">⏱ Vídeo leva de 1 a 4 min e tem custo por geração na sua conta. <b>Veo</b> = clipe artístico com áudio; <b>Avatar</b> = apresentador falando o roteiro; <b>Slideshow</b> = imagens da marca + narração em voz PT-BR + legendas.</p>
-  <div class="outwrap" id="outVideo"></div>
-</div></section>
-
-<section class="tabpane" id="tab-publicacao"><div class="tool">
-  <div class="tk">IA · usa o tema central</div><h3>📤 Pacote de Publicação (BestContent)</h3>
-  <p class="sub">Gera o post pronto para avaliar e publicar: <b>legenda + hashtags</b> e a <b>mídia</b> (imagem, carrossel ou vídeo). Depois é só levar pro BestContent (Criar / Biblioteca).</p>
-  <div class="selrow">
-    <select id="pubMidia">
-      <option value="carrossel">Carrossel (4 imagens)</option>
-      <option value="imagem">Imagem única</option>
-      <option value="veo">Vídeo · Clipe IA (Veo)</option>
-      <option value="avatar">Vídeo · Avatar falante</option>
-      <option value="slideshow">Vídeo · Slideshow narrado</option>
-    </select>
-    <button class="go" id="btnPost" onclick="gerarPacote()">📦 Gerar pacote</button>
-  </div>
-  <p class="sub" style="margin:8px 0 0;font-size:12.5px;opacity:.85">O BestContent não tem API oficial, então o fluxo é: gerar aqui → copiar/baixar → subir no BestContent. Rápido e sem travar sua conta.</p>
-  <div class="outwrap" id="outPost"></div>
-</div></section>
-
 <section class="tabpane" id="tab-referencia"><div class="tool">
   <div class="tk">Independente · usa o @ (não o tema)</div><h3>🔎 Analisar &amp; Adaptar Referência</h3>
   <p class="sub">Esta aba é independente do tema central: coloque o @ de um influenciador e marque o que quer copiar.</p>
@@ -410,7 +369,7 @@ var LP=[['https://aistudio.google.com/','Google AI'],['https://opal.withgoogle.c
 document.getElementById('launchpad').innerHTML='<span class="lplab">Ferramentas de IA:</span>'+LP.map(function(l){return '<a href="'+l[0]+'" target="_blank" rel="noopener">'+l[1]+'</a>';}).join('');
 
 /* ===== tabs / tema / dicas ===== */
-function switchTab(btn){document.querySelectorAll('.tabbar button').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');document.querySelectorAll('.tabpane').forEach(function(p){p.classList.remove('active');});document.getElementById('tab-'+btn.getAttribute('data-tab')).classList.add('active');if(btn.getAttribute('data-tab')==='atlas'){atlasOpen();}}
+function switchTab(btn){document.querySelectorAll('.tabbar button').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');document.querySelectorAll('.tabpane').forEach(function(p){p.classList.remove('active');});document.getElementById('tab-'+btn.getAttribute('data-tab')).classList.add('active');if(btn.getAttribute('data-tab')==='atlas'){atlasOpen();}if(btn.getAttribute('data-tab')==='plano'){try{if(planoGetCal())planoShow('avaliacao');}catch(e){}}}
 function getTema(){return document.getElementById('temaCentral').value.trim();}
 function setTema(el){document.getElementById('temaCentral').value=el.textContent;try{localStorage.setItem('curador_tema',el.textContent);}catch(e){}}
 document.getElementById('temaCentral').addEventListener('input',function(){try{localStorage.setItem('curador_tema',this.value);}catch(e){}});
@@ -836,7 +795,7 @@ async function atlasSend(forced){
     var d=await r.json();if(d.error)throw new Error(d.error);
     var out=d.text||'(sem resposta)';
     think.innerHTML=atlasHeader('atlas')+atlasBody('atlas',out)+atlasHandoffBar(out);
-    atlasHist.push({r:'atlas',t:out});
+    atlasHist.push({r:'atlas',t:out});try{localStorage.setItem('curador_atlas_last',out);}catch(e){}
     var log=document.getElementById('atlasLog');log.scrollTop=log.scrollHeight;
   }catch(e){think.innerHTML='<div class="errbox">Erro: '+esc(e.message)+'</div>';}
   finally{btn.disabled=false;atlasClearImg();}
@@ -863,10 +822,9 @@ function atlasToCurador(btn){
   var gf=function(re){return ((raw.match(re)||[])[1]||'').replace(/[*`]/g,'').trim();};
   atlasApplyBrief({angulo:gf(/[ÂA]NGULO[^:\n]*:\s*([^\n\r]+)/i),gancho:gf(/GANCHO[^:\n]*:\s*([^\n\r]+)/i),pontos:gf(/PONTOS[^:\n]*:\s*([^\n\r]+)/i),evitar:gf(/N[ÃA]O PODE APARECER[^:\n]*:\s*([^\n\r]+)/i),cta:gf(/\bCTA\s*:\s*([^\n\r]+)/i)});
   var tab='gerador';
-  if(/carrossel|est[aá]tico|feed/.test(fmt)) tab='imagem';
-  else if(/live/.test(fmt)) tab='aulas';
+  if(/live/.test(fmt)) tab='aulas';
   if(tab==='gerador'){var fr=document.getElementById('formatoRoteiro');if(fr){var rx=/reel/.test(fmt)?/reel/i:/stor/.test(fmt)?/stor/i:/carrossel/.test(fmt)?/carrossel/i:null;if(rx){for(var k=0;k<fr.options.length;k++){if(rx.test(fr.options[k].value)){fr.selectedIndex=k;break;}}}}}
-  else if(tab==='imagem'){var fi=document.getElementById('fmtImg');if(fi){var rx2=/carrossel/.test(fmt)?/carrossel/i:/story/.test(fmt)?/story/i:/feed|est/.test(fmt)?/feed/i:null;if(rx2){for(var j=0;j<fi.options.length;j++){if(rx2.test(fi.options[j].value)){fi.selectedIndex=j;break;}}}}}
+
   var b=[].slice.call(document.querySelectorAll('.tabbar button')).filter(function(x){return x.getAttribute('data-tab')===tab;})[0];
   if(b)switchTab(b);
   window.scrollTo({top:0,behavior:'smooth'});
@@ -891,6 +849,51 @@ function atlasApplyBrief(b){
   bar.style.display='';
 }
 function clearAtlasBrief(){atlasApplyBrief(null);}
+function planoGetCal(){try{return JSON.parse(localStorage.getItem('curador_plano')||'null');}catch(e){return null;}}
+function highlightSub(which){[].forEach.call(document.querySelectorAll('#planoSubtabs .psub'),function(b){var on=b.getAttribute('data-p')===which;b.style.background=on?'var(--gold)':'';b.style.color=on?'#2a1207':'';});}
+async function planoExport(){
+  var out=document.getElementById('outPlano');
+  var aval='';try{aval=localStorage.getItem('curador_atlas_last')||'';}catch(e){}
+  if(!aval){out.innerHTML='<div class="needconn">Rode uma avaliação na aba 🧭 ATLAS primeiro — o plano é gerado a partir dela.</div>';return;}
+  if(!API.ready){out.innerHTML='<div class="needconn">Servidor sem chave. Clique em Recarregar modelos.</div>';return;}
+  var btn=document.getElementById('btnPlano');btn.disabled=true;out.innerHTML=loading('Gerando o plano do mês a partir da avaliação...');
+  var hoje=new Date().toISOString().slice(0,10);
+  var mes=new Date().toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+  var prompt='Hoje e '+hoje+'. Com base NESTA AVALIACAO do ATLAS, crie o CALENDARIO do mes corrente para @drtennernunes (pessoal, escala). ~4 pecas/semana; 1 SERIE nomeada; CTA de comentario (pergunta binaria) em toda peca; 1 Reel de contra-narrativa/semana; compliance CFM (sem especialista/promessa/marca de remedio; ancora de individualizacao). Responda APENAS JSON compacto, campos curtos: {"serie_nome":"","stories_rotina":["","",""],"calendario":[{"data":"YYYY-MM-DD","dia":"","formato":"Reel|Feed|Carrossel|Story","pilar":"","serie":"","tema":"","gancho":"","cta":"","risco":"VERDE|AMARELO"}]}. ~12 itens.\n\nAVALIACAO:\n'+aval.slice(0,4000);
+  try{
+    var r=await fetch(ATLAS_URL,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({provider:'gemini',model:'gemini-flash-latest',prompt:prompt,max_tokens:8000})});
+    var d=await r.json();if(d.error)throw new Error(d.error);
+    var t=(d.text||'').replace(/```json/gi,'').replace(/```/g,'').trim();var a=t.indexOf('{'),b=t.lastIndexOf('}');if(a>=0&&b>a)t=t.slice(a,b+1);
+    var plano=JSON.parse(t);
+    try{localStorage.setItem('curador_plano',JSON.stringify({aval:aval,plano:plano,ts:hoje,mes:mes}));}catch(e){}
+    planoShow('avaliacao');
+  }catch(e){out.innerHTML='<div class="errbox">Erro ao gerar: '+esc(e.message)+'</div>';}
+  finally{btn.disabled=false;}
+}
+function planoShow(which,btn){
+  var s=planoGetCal();var out=document.getElementById('outPlano');
+  if(!s){out.innerHTML='<div class="needconn">Nenhum plano ainda. Clique em "Exportar avaliação".</div>';return;}
+  highlightSub(which);
+  if(which==='avaliacao'){out.innerHTML='<div class="mdout">'+md(s.aval)+'</div>';return;}
+  if(which==='stories'){var st=(s.plano.stories_rotina||[]);out.innerHTML='<div class="mdout"><h3>Stories — rotina diária ('+esc(s.mes||'')+')</h3><ul>'+st.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div>';return;}
+  var mapF={reels:/reel/i,feed:/feed|est/i,carrossel:/carrossel/i};var rx=mapF[which]||/zzz/;
+  var items=(s.plano.calendario||[]).filter(function(c){return rx.test(c.formato||'');});
+  if(!items.length){out.innerHTML='<div class="needconn">Sem itens de '+which+' no plano deste mês.</div>';return;}
+  out.innerHTML='<div class="mdout"><h3>'+which.charAt(0).toUpperCase()+which.slice(1)+' — '+esc(s.mes||'')+' ('+items.length+')</h3>'+items.map(function(c){return '<div class="refitem"><b>'+esc(c.data)+' · '+esc(c.formato)+(c.serie?(' · '+esc(c.serie)):'')+'</b><div class="meta">Pilar: '+esc(c.pilar||'')+' · Risco: '+esc(c.risco||'')+'</div><p><b>Tema:</b> '+esc(c.tema||'')+'<br><b>Gancho:</b> '+esc(c.gancho||'')+'<br><b>CTA:</b> '+esc(c.cta||'')+'</p><button class="go alt" style="padding:6px 12px;font-size:12.5px" onclick="planoToCurador(this)">▶ Roteirizar no CURADOR</button><textarea class="pRaw" style="display:none">'+esc(JSON.stringify(c))+'</textarea></div>';}).join('')+'</div>';
+}
+function planoToCurador(btn){
+  var c=JSON.parse(btn.parentElement.querySelector('.pRaw').value);
+  var input=document.getElementById('temaCentral');input.value=c.tema;input.dispatchEvent(new Event('input',{bubbles:true}));
+  if(typeof atlasApplyBrief==='function')atlasApplyBrief({angulo:(c.pilar||'')+' — '+(c.tema||''),gancho:c.gancho||'',pontos:'',evitar:'',cta:c.cta||''});
+  var fr=document.getElementById('formatoRoteiro');if(fr){var rx=/reel/i.test(c.formato)?/reel/i:/stor/i.test(c.formato)?/stor/i:/carrossel/i.test(c.formato)?/carrossel/i:null;if(rx){for(var k=0;k<fr.options.length;k++){if(rx.test(fr.options[k].value)){fr.selectedIndex=k;break;}}}}
+  var b=[].slice.call(document.querySelectorAll('.tabbar button')).filter(function(x){return x.getAttribute('data-tab')==='gerador';})[0];if(b)switchTab(b);window.scrollTo({top:0,behavior:'smooth'});
+}
+function planoBaixar(){
+  var s=planoGetCal();if(!s){document.getElementById('outPlano').innerHTML='<div class="needconn">Gere o plano primeiro.</div>';return;}
+  var p=s.plano;var nl=String.fromCharCode(10);
+  var md2='# Avaliacao ATLAS + Plano ('+(s.mes||'')+') — @drtennernunes'+nl+nl+'## Avaliacao'+nl+nl+s.aval+nl+nl+'## Serie: '+(p.serie_nome||'')+nl+nl+'| Data | Formato | Pilar | Serie | Tema | Gancho | CTA | Risco |'+nl+'|---|---|---|---|---|---|---|---|'+nl+(p.calendario||[]).map(function(c){return '| '+[c.data,c.formato,c.pilar,c.serie||'-',c.tema,c.gancho,c.cta,c.risco].join(' | ')+' |';}).join(nl)+nl+nl+'## Stories'+nl+(p.stories_rotina||[]).map(function(x){return '- '+x;}).join(nl);
+  var a=document.createElement('a');a.href='data:text/markdown;charset=utf-8,'+encodeURIComponent(md2);a.download='avaliacao-plano-drtennernunes.md';document.body.appendChild(a);a.click();a.remove();
+}
 function analisarRef(){
   var handle=document.getElementById('refHandle').value.trim(),sample=document.getElementById('refSample').value.trim(),asps=[];
   document.querySelectorAll('.refasp:checked').forEach(function(c){asps.push(c.value);});
