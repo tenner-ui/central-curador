@@ -180,6 +180,7 @@
 <div class="tipsbar"><span class="tl">💡 Dica:</span><span id="tipTxt">…</span></div>
 
 <nav class="tabbar">
+  <button data-tab="atlas" onclick="switchTab(this)">🧭 ATLAS</button>
   <button class="active" data-tab="avaliador" onclick="switchTab(this)">⚖ Avaliar Tema</button>
   <button data-tab="gerador" onclick="switchTab(this)">🎬 Roteiros</button>
   <button data-tab="aulas" onclick="switchTab(this)">🎓 Aulas</button>
@@ -218,6 +219,30 @@
   </div>
   <div class="handoff">Regras do Dr. Tenner aplicadas: liderar pela fisiologia (sem frases negativas), sem medicamentos no conteúdo leigo, aviso educativo em toda legenda e CTA de agendamento.</div>
   <div class="outwrap" id="outAula"></div>
+</div></section>
+
+<section class="tabpane" id="tab-atlas"><div class="tool">
+  <div class="tk">Camada superior · estrategista-chefe</div><h3>🧭 ATLAS — Estratégia</h3>
+  <p class="sub">O estrategista que decide <b>o que produzir, por quê e quando</b> e entrega plano, calendário e briefing para o CURADOR executar. Fale com ele ou use um comando.</p>
+  <div style="display:flex;flex-wrap:wrap;gap:6px">
+    <button class="go alt" style="padding:6px 12px;font-size:12.5px" onclick="atlasCmd('/auditoria')">/auditoria</button>
+    <button class="go alt" style="padding:6px 12px;font-size:12.5px" onclick="atlasCmd('/benchmark ')">/benchmark</button>
+    <button class="go alt" style="padding:6px 12px;font-size:12.5px" onclick="atlasCmd('/tese')">/tese</button>
+    <button class="go alt" style="padding:6px 12px;font-size:12.5px" onclick="atlasCmd('/arquitetura')">/arquitetura</button>
+    <button class="go alt" style="padding:6px 12px;font-size:12.5px" onclick="atlasCmd('/calendario 30')">/calendario</button>
+    <button class="go alt" style="padding:6px 12px;font-size:12.5px" onclick="atlasCmd('/eventos mês')">/eventos</button>
+    <button class="go alt" style="padding:6px 12px;font-size:12.5px" onclick="atlasCmd('/metricas')">/metricas</button>
+    <button class="go alt" style="padding:6px 12px;font-size:12.5px" onclick="atlasCmd('/briefing #')">/briefing</button>
+    <button class="go alt" style="padding:6px 12px;font-size:12.5px" onclick="atlasCmd('/revisar')">/revisar</button>
+    <button class="go alt" style="padding:6px 12px;font-size:12.5px" onclick="atlasCmd('/risco ')">/risco</button>
+    <button class="go alt" style="padding:6px 12px;font-size:12.5px" onclick="atlasCmd('/full')">/full</button>
+  </div>
+  <div id="atlasLog" style="margin-top:14px;max-height:60vh;overflow:auto;display:flex;flex-direction:column;gap:12px"></div>
+  <div class="selrow" style="margin-top:12px;align-items:stretch">
+    <textarea id="atlasIn" rows="2" placeholder="Fale com o ATLAS ou digite um comando — ex.: cole seus Insights dos últimos 90 dias" style="flex:1;min-height:54px" onkeydown="if(event.key==='Enter'&&(event.ctrlKey||event.metaKey)){event.preventDefault();atlasSend();}"></textarea>
+    <button class="go" id="btnAtlas" onclick="atlasSend()">Enviar</button>
+  </div>
+  <div class="handoff">ATLAS decide e planeja; o CURADOR executa. Ele entrega plano, calendário e briefing — não escreve legenda nem roteiro. (Ctrl+Enter envia)</div>
 </div></section>
 
 <section class="tabpane" id="tab-gerador"><div class="tool">
@@ -383,7 +408,7 @@ var LP=[['https://aistudio.google.com/','Google AI'],['https://opal.withgoogle.c
 document.getElementById('launchpad').innerHTML='<span class="lplab">Ferramentas de IA:</span>'+LP.map(function(l){return '<a href="'+l[0]+'" target="_blank" rel="noopener">'+l[1]+'</a>';}).join('');
 
 /* ===== tabs / tema / dicas ===== */
-function switchTab(btn){document.querySelectorAll('.tabbar button').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');document.querySelectorAll('.tabpane').forEach(function(p){p.classList.remove('active');});document.getElementById('tab-'+btn.getAttribute('data-tab')).classList.add('active');}
+function switchTab(btn){document.querySelectorAll('.tabbar button').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');document.querySelectorAll('.tabpane').forEach(function(p){p.classList.remove('active');});document.getElementById('tab-'+btn.getAttribute('data-tab')).classList.add('active');if(btn.getAttribute('data-tab')==='atlas'){atlasOpen();}}
 function getTema(){return document.getElementById('temaCentral').value.trim();}
 function setTema(el){document.getElementById('temaCentral').value=el.textContent;try{localStorage.setItem('curador_tema',el.textContent);}catch(e){}}
 document.getElementById('temaCentral').addEventListener('input',function(){try{localStorage.setItem('curador_tema',this.value);}catch(e){}});
@@ -767,6 +792,37 @@ async function aulaExtra(kind,btn){
   try{var txt=await ask(p,1800);ex.innerHTML='<div class="mdout" style="margin-top:12px">'+md(txt)+'</div>';ex.scrollIntoView({block:'start'});}
   catch(e){ex.innerHTML='<div class="errbox">Erro: '+esc(e.message)+'</div>';}
   btn.disabled=false;btn.textContent=o;
+}
+var ATLAS_URL='https://qqjebmisnlrlzglfuftf.supabase.co/functions/v1/atlas';
+var ATLAS_INIT='**ATLAS online.**\n\nEstrategista-chefe de marketing médico. Camada superior do CURADOR.\n\nAntes de planejar qualquer coisa, preciso de 3 blocos: **diagnóstico do perfil**, **benchmarks** e **objetivo**.\n\nComece pelo que você tiver agora. Se quiser ir direto ao ponto, mande os Insights dos últimos 90 dias e de 3 a 8 @ de médicos que você quer usar como referência.\n\nComandos: `/auditoria` `/benchmark` `/tese` `/arquitetura` `/calendario` `/eventos` `/metricas` `/briefing` `/revisar` `/risco` `/full`';
+var atlasHist=[]; var atlasStarted=false;
+function atlasOpen(){ if(atlasStarted)return; atlasStarted=true; var w=atlasBubble('atlas',ATLAS_INIT); atlasHist.push({r:'atlas',t:ATLAS_INIT}); }
+function atlasHeader(role){var isU=role==='user';var who=isU?'Dr. Tenner':(role==='sys'?'Sistema':'ATLAS');return '<div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9a8f7a;margin:0 0 4px;text-align:'+(isU?'right':'left')+'">'+who+'</div>';}
+function atlasBody(role,textMd){if(role==='atlas')return '<div class="mdout" style="margin:0">'+md(textMd)+'</div>';var isU=role==='user';return '<div style="background:'+(isU?'#173a2e':'#241a1a')+';color:#f0e6d2;border:1px solid #3a3a3a;border-radius:12px;padding:10px 13px;white-space:pre-wrap">'+esc(textMd)+'</div>';}
+function atlasBubble(role,textMd){var log=document.getElementById('atlasLog');var wrap=document.createElement('div');wrap.style.cssText='align-self:'+(role==='user'?'flex-end':'flex-start')+';max-width:94%';wrap.innerHTML=atlasHeader(role)+atlasBody(role,textMd);log.appendChild(wrap);log.scrollTop=log.scrollHeight;return wrap;}
+function atlasCmd(c){var i=document.getElementById('atlasIn');var last=c.slice(-1);if(last===' '||last==='#'){i.value=c;i.focus();}else{atlasSend(c);}}
+async function atlasSend(forced){
+  var i=document.getElementById('atlasIn');
+  var msg=(forced!==undefined?forced:i.value).trim();
+  if(!msg)return;
+  if(!API.ready){atlasBubble('sys','O servidor ainda nao tem chave configurada. Clique em Recarregar modelos no topo.');return;}
+  if(forced===undefined)i.value='';
+  if(!atlasStarted){atlasStarted=true;}
+  atlasBubble('user',msg);atlasHist.push({r:'user',t:msg});
+  var think=atlasBubble('atlas','_formulando resposta..._');
+  var convo=atlasHist.map(function(m){return (m.r==='user'?'DR. TENNER':'ATLAS')+': '+m.t;}).join('\n\n');
+  var prompt='Historico da conversa (use como memoria). Responda AGORA como ATLAS a ultima fala do DR. TENNER:\n\n'+convo;
+  var btn=document.getElementById('btnAtlas');btn.disabled=true;
+  try{
+    var model=document.getElementById('modelSel').value;
+    var r=await fetch(ATLAS_URL,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({provider:API.provider,model:model,prompt:prompt,max_tokens:4200})});
+    var d=await r.json();if(d.error)throw new Error(d.error);
+    var out=d.text||'(sem resposta)';
+    think.innerHTML=atlasHeader('atlas')+atlasBody('atlas',out);
+    atlasHist.push({r:'atlas',t:out});
+    var log=document.getElementById('atlasLog');log.scrollTop=log.scrollHeight;
+  }catch(e){think.innerHTML='<div class="errbox">Erro: '+esc(e.message)+'</div>';}
+  finally{btn.disabled=false;}
 }
 function analisarRef(){
   var handle=document.getElementById('refHandle').value.trim(),sample=document.getElementById('refSample').value.trim(),asps=[];
