@@ -178,6 +178,7 @@
 </div>
 
 <div class="tipsbar"><span class="tl">💡 Dica:</span><span id="tipTxt">…</span></div>
+<div id="atlasBriefBar" style="display:none;background:linear-gradient(90deg,#1a1508,#141414);border-bottom:1px solid #6b5a1f;color:#f0e6d2;padding:8px 18px;font-family:'Helvetica Neue',Arial,sans-serif;font-size:12.5px"></div>
 
 <nav class="tabbar">
   <button data-tab="atlas" onclick="switchTab(this)">🧭 ATLAS</button>
@@ -453,9 +454,9 @@ function needTema(outId){if(!getTema()){document.getElementById(outId).innerHTML
 
 /* ===== abas que usam o tema central ===== */
 function avaliarTema(){if(needTema('outAval'))return;var t=getTema();run('outAval','btnAval','Avalie PROFUNDAMENTE este tema para o Instagram do Dr. Tenner Nunes.\n\nTEMA: "'+t+'"\n\nEm Markdown, específico a ESTE tema:\n## Força do tema\nNota 0–100 + frase de veredito.\n## 4 dimensões\nNota + 1 linha cada: Relevância ao nicho; Potencial emocional; Gancho/curiosidade; Originalidade/viral.\n## Riscos de conformidade CFM\nEspecíficos + como contornar.\n## 5 ângulos criativos e originais\n## Plano de publicações\nReel, Carrossel, Story, História real e institucional — cada um com gancho original.',3900);}
-function gerarRoteiro(){if(needTema('outRot'))return;var t=getTema(),f=document.getElementById('formatoRoteiro').value,v=document.getElementById('contaRoteiro').value;run('outRot','btnRot','Crie um ROTEIRO completo, ORIGINAL e com potencial viral.\n\nTEMA: "'+t+'"\nFORMATO: '+f+'\nVOZ: '+v+'\n\nInclua: gancho de 3s inédito; desenvolvimento (uma ideia por trecho); CTA que gera comentário; marcação de tempos/telas (Reel/Story) ou card a card (Carrossel); LEGENDA pronta com nota de individualização e assinatura correta; 6–8 hashtags. Markdown.',3900);}
+function gerarRoteiro(){if(needTema('outRot'))return;var t=getTema(),f=document.getElementById('formatoRoteiro').value,v=document.getElementById('contaRoteiro').value;run('outRot','btnRot','Crie um ROTEIRO completo, ORIGINAL e com potencial viral.\n\nTEMA: "'+t+'"\nFORMATO: '+f+'\nVOZ: '+v+'\n\nInclua: gancho de 3s inédito; desenvolvimento (uma ideia por trecho); CTA que gera comentário; marcação de tempos/telas (Reel/Story) ou card a card (Carrossel); LEGENDA pronta com nota de individualização e assinatura correta; 6–8 hashtags. Markdown.'+briefDirectives(),3900);}
 function gerarLegendas(){if(needTema('outLeg'))return;var t=getTema(),tom=document.getElementById('tomLeg').value;run('outLeg','btnLeg','Escreva 3 variações de LEGENDA de Instagram sobre "'+t+'", em tom '+tom+'. Cada variação: gancho forte na 1ª linha + corpo curto + CTA que gera comentário (pergunta fácil) + nota de individualização/avaliação médica + assinatura correta. No fim, um bloco com 8 hashtags relevantes. Markdown, separando as 3 variações.',3200);}
-function gerarArte(){if(needTema('outImg'))return;var t=getTema(),f=document.getElementById('fmtImg').value;run('outImg','btnImg','Crie a DIREÇÃO DE ARTE para uma '+f+' sobre "'+t+'", na identidade do Instituto Vitality (fundo VERDE da marca — verde esmeralda/floresta profundo, elegante e clínico —, dourado #C9A44C, tipografia serifada elegante, ar editorial premium; opção de foto do Dr. Tenner). Entregue em Markdown:\n## Conceito visual\n## Composição / layout\n## Paleta e tipografia\n## Texto sugerido na arte (curto)\n## Prompt de imagem (em inglês)\nUm prompt detalhado, pronto para colar no Ideogram, Google Gemini ou Canva para renderizar.',3000);}
+function gerarArte(){if(needTema('outImg'))return;var t=getTema(),f=document.getElementById('fmtImg').value;run('outImg','btnImg','Crie a DIREÇÃO DE ARTE para uma '+f+' sobre "'+t+'", na identidade do Instituto Vitality (fundo VERDE da marca — verde esmeralda/floresta profundo, elegante e clínico —, dourado #C9A44C, tipografia serifada elegante, ar editorial premium; opção de foto do Dr. Tenner). Entregue em Markdown:\n## Conceito visual\n## Composição / layout\n## Paleta e tipografia\n## Texto sugerido na arte (curto)\n## Prompt de imagem (em inglês)\nUm prompt detalhado, pronto para colar no Ideogram, Google Gemini ou Canva para renderizar.'+briefDirectives(),3000);}
 async function askImage(prompt){
   var d=null;
   for(var i=0;i<3;i++){
@@ -754,7 +755,7 @@ function buildAulaPrompt(t,publico,formato){
     p += '\n\nPOR SER LEIGO: NAO cite medicamentos, moleculas, doses nem marcas. Fale de MECANISMO e do CAMINHO de solucao, nao de prescricao.';
   }
   p += '\n\nEntregue em Markdown limpo: comece com "# Serie: '+t+'" (ou "# Aula: '+t+'" se for unica) e cada modulo como "## Modulo N — <titulo>".';
-  return p;
+  return p+briefDirectives();
 }
 async function gerarAula(){
   if(needTema('outAula'))return;
@@ -836,6 +837,8 @@ function atlasToCurador(btn){
   var fmt=((raw.match(/FORMATO\s*:\s*([^\n\r]+)/i)||[])[1]||'').toLowerCase();
   if(!tema){btn.textContent='Nao achei o TEMA no briefing';return;}
   var input=document.getElementById('temaCentral');input.value=tema;input.dispatchEvent(new Event('input',{bubbles:true}));
+  var gf=function(re){return ((raw.match(re)||[])[1]||'').replace(/[*`]/g,'').trim();};
+  atlasApplyBrief({angulo:gf(/[ÂA]NGULO[^:\n]*:\s*([^\n\r]+)/i),gancho:gf(/GANCHO[^:\n]*:\s*([^\n\r]+)/i),pontos:gf(/PONTOS[^:\n]*:\s*([^\n\r]+)/i),evitar:gf(/N[ÃA]O PODE APARECER[^:\n]*:\s*([^\n\r]+)/i),cta:gf(/\bCTA\s*:\s*([^\n\r]+)/i)});
   var tab='gerador';
   if(/carrossel|est[aá]tico|feed/.test(fmt)) tab='imagem';
   else if(/live/.test(fmt)) tab='aulas';
@@ -844,7 +847,28 @@ function atlasToCurador(btn){
   var b=[].slice.call(document.querySelectorAll('.tabbar button')).filter(function(x){return x.getAttribute('data-tab')===tab;})[0];
   if(b)switchTab(b);
   window.scrollTo({top:0,behavior:'smooth'});
-}function analisarRef(){
+}var ATLAS_BRIEF=null;
+function briefDirectives(){
+  if(!ATLAS_BRIEF)return '';
+  var b=ATLAS_BRIEF,L=[];
+  if(b.angulo)L.push('Angulo/tese desta peca: '+b.angulo);
+  if(b.gancho)L.push('Gancho obrigatorio (3s): '+b.gancho);
+  if(b.pontos)L.push('Pontos que precisam aparecer: '+b.pontos);
+  if(b.evitar)L.push('O que NAO pode aparecer (compliance): '+b.evitar);
+  if(b.cta)L.push('CTA: '+b.cta);
+  return L.length ? ('\n\nDIRECIONAMENTO DO ATLAS (siga a risca, mantendo o compliance CFM): '+L.join('; ')+'.') : '';
+}
+function atlasApplyBrief(b){
+  if(b && !(b.angulo||b.gancho||b.pontos||b.evitar||b.cta)) b=null;
+  ATLAS_BRIEF=b;
+  var bar=document.getElementById('atlasBriefBar'); if(!bar)return;
+  if(!b){bar.style.display='none';bar.innerHTML='';return;}
+  var bits=[]; if(b.angulo)bits.push('<b>Angulo:</b> '+esc(b.angulo)); if(b.gancho)bits.push('<b>Gancho:</b> '+esc(b.gancho));
+  bar.innerHTML='🧭 <b>Briefing ATLAS ativo</b> — '+(bits.join(' · ')||'direcionamento aplicado nas gerações')+' <button class="go alt" style="padding:3px 10px;font-size:11px;margin-left:8px" onclick="clearAtlasBrief()">limpar</button>';
+  bar.style.display='';
+}
+function clearAtlasBrief(){atlasApplyBrief(null);}
+function analisarRef(){
   var handle=document.getElementById('refHandle').value.trim(),sample=document.getElementById('refSample').value.trim(),asps=[];
   document.querySelectorAll('.refasp:checked').forEach(function(c){asps.push(c.value);});
   if(!handle&&!asps.length){document.getElementById('outRef').innerHTML='<div class="needconn">Coloque o @ e marque ao menos um item.</div>';return;}
