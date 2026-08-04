@@ -818,11 +818,29 @@ async function atlasSend(forced){
     var r=await fetch(ATLAS_URL,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({provider:API.provider,model:model,prompt:prompt,max_tokens:4200})});
     var d=await r.json();if(d.error)throw new Error(d.error);
     var out=d.text||'(sem resposta)';
-    think.innerHTML=atlasHeader('atlas')+atlasBody('atlas',out);
+    think.innerHTML=atlasHeader('atlas')+atlasBody('atlas',out)+atlasHandoffBar(out);
     atlasHist.push({r:'atlas',t:out});
     var log=document.getElementById('atlasLog');log.scrollTop=log.scrollHeight;
   }catch(e){think.innerHTML='<div class="errbox">Erro: '+esc(e.message)+'</div>';}
   finally{btn.disabled=false;}
+}
+function atlasHandoffBar(text){
+  if(!/BRIEFING/i.test(text) || !/TEMA\s*:/i.test(text)) return '';
+  return '<div class="atlasHandoff" style="margin-top:10px"><textarea class="atlasRaw" style="display:none">'+esc(text)+'</textarea>'
+    +'<button class="go" onclick="atlasToCurador(this)">▶ Enviar tema pro CURADOR</button>'
+    +'<span class="handoff" style="margin-left:8px">joga o TEMA no campo central e abre os Roteiros</span></div>';
+}
+function atlasToCurador(btn){
+  var raw=btn.parentElement.querySelector('.atlasRaw').value||'';
+  var tema=((raw.match(/TEMA\s*:\s*([^\n\r]+)/i)||[])[1]||'').replace(/[*`_]/g,'').trim();
+  var fmt=((raw.match(/FORMATO\s*:\s*([^\n\r]+)/i)||[])[1]||'').toLowerCase();
+  if(!tema){btn.textContent='Nao achei o TEMA no briefing';return;}
+  var input=document.getElementById('temaCentral');input.value=tema;input.dispatchEvent(new Event('input',{bubbles:true}));
+  var fr=document.getElementById('formatoRoteiro');
+  if(fr && fmt){var rx=/reel/.test(fmt)?/reel/i:/carrossel/.test(fmt)?/carrossel/i:/stor/.test(fmt)?/stor/i:null;if(rx){for(var k=0;k<fr.options.length;k++){if(rx.test(fr.options[k].value)){fr.selectedIndex=k;break;}}}}
+  var b=[].slice.call(document.querySelectorAll('.tabbar button')).filter(function(x){return x.getAttribute('data-tab')==='gerador';})[0];
+  if(b)switchTab(b);
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 function analisarRef(){
   var handle=document.getElementById('refHandle').value.trim(),sample=document.getElementById('refSample').value.trim(),asps=[];
