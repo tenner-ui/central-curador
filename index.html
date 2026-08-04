@@ -836,13 +836,15 @@ function atlasToCurador(btn){
   var fmt=((raw.match(/FORMATO\s*:\s*([^\n\r]+)/i)||[])[1]||'').toLowerCase();
   if(!tema){btn.textContent='Nao achei o TEMA no briefing';return;}
   var input=document.getElementById('temaCentral');input.value=tema;input.dispatchEvent(new Event('input',{bubbles:true}));
-  var fr=document.getElementById('formatoRoteiro');
-  if(fr && fmt){var rx=/reel/.test(fmt)?/reel/i:/carrossel/.test(fmt)?/carrossel/i:/stor/.test(fmt)?/stor/i:null;if(rx){for(var k=0;k<fr.options.length;k++){if(rx.test(fr.options[k].value)){fr.selectedIndex=k;break;}}}}
-  var b=[].slice.call(document.querySelectorAll('.tabbar button')).filter(function(x){return x.getAttribute('data-tab')==='gerador';})[0];
+  var tab='gerador';
+  if(/carrossel|est[aá]tico|feed/.test(fmt)) tab='imagem';
+  else if(/live/.test(fmt)) tab='aulas';
+  if(tab==='gerador'){var fr=document.getElementById('formatoRoteiro');if(fr){var rx=/reel/.test(fmt)?/reel/i:/stor/.test(fmt)?/stor/i:/carrossel/.test(fmt)?/carrossel/i:null;if(rx){for(var k=0;k<fr.options.length;k++){if(rx.test(fr.options[k].value)){fr.selectedIndex=k;break;}}}}}
+  else if(tab==='imagem'){var fi=document.getElementById('fmtImg');if(fi){var rx2=/carrossel/.test(fmt)?/carrossel/i:/story/.test(fmt)?/story/i:/feed|est/.test(fmt)?/feed/i:null;if(rx2){for(var j=0;j<fi.options.length;j++){if(rx2.test(fi.options[j].value)){fi.selectedIndex=j;break;}}}}}
+  var b=[].slice.call(document.querySelectorAll('.tabbar button')).filter(function(x){return x.getAttribute('data-tab')===tab;})[0];
   if(b)switchTab(b);
   window.scrollTo({top:0,behavior:'smooth'});
-}
-function analisarRef(){
+}function analisarRef(){
   var handle=document.getElementById('refHandle').value.trim(),sample=document.getElementById('refSample').value.trim(),asps=[];
   document.querySelectorAll('.refasp:checked').forEach(function(c){asps.push(c.value);});
   if(!handle&&!asps.length){document.getElementById('outRef').innerHTML='<div class="needconn">Coloque o @ e marque ao menos um item.</div>';return;}
