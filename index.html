@@ -196,8 +196,8 @@
 <div class="wrap">
 
 <section class="tabpane active" id="tab-avaliador"><div class="tool">
-  <div class="tk">IA · usa o tema central</div><h3>⚖ Avaliar Tema</h3>
-  <p class="sub">Avaliação profunda do tema central: força, 4 dimensões, riscos CFM, 5 ângulos originais e plano de publicações — sempre com dicas de melhoria ao final.</p>
+  <div class="tk">IA · pesquisa evidências recentes · usa o tema central</div><h3>⚖ Avaliar Tema</h3>
+  <p class="sub">Antes de avaliar, o Curador pesquisa as <b>últimas atualizações do tema no PubMed (5 anos)</b> e usa isso na análise: panorama atual, força, 4 dimensões, riscos CFM, 5 ângulos originais e plano de publicações. Todo texto gerado é <b>editável</b> e você pode <b>inserir campos/blocos acessórios</b> (disclaimer, assinatura, CTA, observações).</p>
   <button class="go" id="btnAval" onclick="avaliarTema()">Avaliar tema central</button>
   <div class="outwrap" id="outAval"></div>
 </div></section>
@@ -409,17 +409,101 @@ async function ask(p,mt){
 function md(t){var L=(t||'').replace(/\r/g,'').split('\n'),h='',ul=0,ol=0;function c(){if(ul){h+='</ul>';ul=0;}if(ol){h+='</ol>';ol=0;}}function il(s){s=s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');s=s.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');s=s.replace(/(^|[^*])\*([^*]+)\*/g,'$1<i>$2</i>');s=s.replace(/`([^`]+)`/g,'<code>$1</code>');return s;}for(var i=0;i<L.length;i++){var t2=L[i].trim();if(!t2){c();continue;}if(/^---+$/.test(t2)){c();h+='<hr>';continue;}var hm=/^(#{1,6})\s+(.*)$/.exec(t2);if(hm){c();var lv=Math.min(4,hm[1].length+1);h+='<h'+lv+'>'+il(hm[2])+'</h'+lv+'>';continue;}var um=/^[-*]\s+(.*)$/.exec(t2);if(um){if(!ul){c();h+='<ul>';ul=1;}h+='<li>'+il(um[1])+'</li>';continue;}var om=/^\d+\.\s+(.*)$/.exec(t2);if(om){if(!ol){c();h+='<ol>';ol=1;}h+='<li>'+il(om[1])+'</li>';continue;}c();h+='<p>'+il(t2)+'</p>';}c();return h;}
 function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
 window.copiarTxt=function(el){var t=el.getAttribute('data-full');var ta=document.createElement('textarea');ta.innerHTML=t;t=ta.value;if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){var o=el.textContent;el.textContent='Copiado ✓';setTimeout(function(){el.textContent=o;},1500);});}};
+/* ===== saída EDITÁVEL + inserir campos (partes acessórias) ===== */
+var __edRange=null;
+function edRemember(el){try{var s=window.getSelection();if(s&&s.rangeCount&&el.contains(s.anchorNode))__edRange=s.getRangeAt(0).cloneRange();}catch(e){}}
+var ED_SNIP={
+  disclaimer:'\n\nConteúdo educativo, não substitui a consulta médica individualizada.',
+  assinatura:'\n\nDr. Tenner Nunes — Médico | CRM/RR 2920\nPós-graduando em Endocrinologia e Metabologia',
+  cta:'\n\nAgende sua avaliação individualizada — link na bio.',
+  obs:'\n\n[Observação: ____]',
+  ref:'\n\n[Referência: ____]',
+  campo:'\n\n[Novo campo: ____]'
+};
+function edToggle(btn){
+  var wrap=btn.closest('.editwrap'),doc=wrap.querySelector('.eddoc'),fields=wrap.querySelector('.edfields');
+  var on=doc.getAttribute('contenteditable')==='true';
+  if(on){doc.setAttribute('contenteditable','false');btn.textContent='✏️ Editar';fields.style.display='none';doc.style.outline='';doc.style.background='';}
+  else{doc.setAttribute('contenteditable','true');btn.textContent='✓ Concluir edição';fields.style.display='inline-flex';doc.style.outline='2px solid var(--gold)';doc.style.background='#fffdf8';doc.focus();edRemember(doc);}
+}
+function edInsert(btn,key){
+  var wrap=btn.closest('.editwrap'),doc=wrap.querySelector('.eddoc');
+  if(doc.getAttribute('contenteditable')!=='true'){edToggle(wrap.querySelector('.edtoggle'));}
+  doc.focus();
+  var txt=ED_SNIP[key]||'\n\n[Campo: ____]';
+  try{var s=window.getSelection();if(__edRange&&doc.contains(__edRange.startContainer)){s.removeAllRanges();s.addRange(__edRange);}}catch(e){}
+  var ok=false;try{ok=document.execCommand('insertText',false,txt);}catch(e){}
+  if(!ok){doc.appendChild(document.createTextNode(txt));}
+  edRemember(doc);
+}
+function edCopy(btn){
+  var doc=btn.closest('.editwrap').querySelector('.eddoc'),t=doc.innerText;
+  if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){var o=btn.textContent;btn.textContent='Copiado ✓';setTimeout(function(){btn.textContent=o;},1500);});}
+}
+function edDownload(btn){
+  var doc=btn.closest('.editwrap').querySelector('.eddoc'),t=doc.innerText;
+  var a=document.createElement('a');a.href='data:text/markdown;charset=utf-8,'+encodeURIComponent(t);a.download='curador-texto.md';document.body.appendChild(a);a.click();a.remove();
+}
+function edBlock(txt){
+  function B(fn,label){return '<button class="go alt" style="padding:5px 10px;font-size:11.5px" onmousedown="event.preventDefault()" onclick="'+fn+'">'+label+'</button>';}
+  return '<div class="editwrap">'
+   +'<div class="edittools" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px">'
+     +'<button class="go alt edtoggle" style="padding:5px 10px;font-size:11.5px" onmousedown="event.preventDefault()" onclick="edToggle(this)">✏️ Editar</button>'
+     +'<span class="edfields" style="display:none;flex-wrap:wrap;gap:6px;align-items:center">'
+       +'<span class="tk" style="margin:0 2px">inserir campo:</span>'
+       +B("edInsert(this,'disclaimer')",'+ Disclaimer')
+       +B("edInsert(this,'assinatura')",'+ Assinatura')
+       +B("edInsert(this,'cta')",'+ CTA')
+       +B("edInsert(this,'obs')",'+ Observação')
+       +B("edInsert(this,'ref')",'+ Referência')
+       +B("edInsert(this,'campo')",'+ Campo livre')
+     +'</span>'
+     +'<span style="flex:1"></span>'
+     +B('edCopy(this)','Copiar tudo')
+     +B('edDownload(this)','Baixar .md')
+   +'</div>'
+   +'<div class="mdout eddoc" contenteditable="false" onkeyup="edRemember(this)" onmouseup="edRemember(this)" style="transition:background .15s">'+md(txt)+'</div>'
+   +'</div>';
+}
 async function run(outId,btnId,prompt,mt){
   if(!API.ready){document.getElementById(outId).innerHTML='<div class="needconn">O servidor ainda não tem a chave configurada. Defina os secrets no Supabase (ANTHROPIC_API_KEY / GEMINI_API_KEY) e clique em Recarregar modelos.</div>';return;}
   var out=document.getElementById(outId),btn=document.getElementById(btnId);btn.disabled=true;
   out.innerHTML='<div class="loading"><span class="spin"></span>Gerando com a IA...</div>';
-  try{var txt=await ask(prompt,mt);out.innerHTML='<div class="mdout">'+md(txt)+'<button class="copybtn" data-full="'+esc(txt)+'" onclick="copiarTxt(this)">Copiar tudo</button></div>';}
+  try{var txt=await ask(prompt,mt);out.innerHTML=edBlock(txt);}
   catch(err){out.innerHTML='<div class="errbox"><b>Erro:</b> '+esc(err.message)+'</div>';}finally{btn.disabled=false;}
 }
 function needTema(outId){if(!getTema()){document.getElementById(outId).innerHTML='<div class="needconn">Digite o tema central na barra 🎯 do topo primeiro.</div>';return true;}return false;}
 
 /* ===== abas que usam o tema central ===== */
-function avaliarTema(){if(needTema('outAval'))return;var t=getTema();run('outAval','btnAval','Avalie PROFUNDAMENTE este tema para o Instagram do Dr. Tenner Nunes.\n\nTEMA: "'+t+'"\n\nEm Markdown, específico a ESTE tema:\n## Força do tema\nNota 0–100 + frase de veredito.\n## 4 dimensões\nNota + 1 linha cada: Relevância ao nicho; Potencial emocional; Gancho/curiosidade; Originalidade/viral.\n## Riscos de conformidade CFM\nEspecíficos + como contornar.\n## 5 ângulos criativos e originais\n## Plano de publicações\nReel, Carrossel, Story, História real e institucional — cada um com gancho original.',3900);}
+async function avaliarTema(){
+  if(needTema('outAval'))return;
+  var out=document.getElementById('outAval'),btn=document.getElementById('btnAval');
+  if(!API.ready){out.innerHTML='<div class="needconn">O servidor ainda não tem a chave configurada. Clique em Recarregar modelos.</div>';return;}
+  var t=getTema();btn.disabled=true;
+  out.innerHTML=loading('1/2 · Pesquisando as últimas atualizações do tema no PubMed...');
+  var evi=[],eviTxt='';
+  try{
+    var base=t;
+    try{var q=await ask('Converta o tema "'+t+'" em uma QUERY de busca do PubMed em INGLES, curta e eficaz (termos MeSH e AND/OR quando ajudar). Responda APENAS a query, sem aspas.',150);if(q){q=q.replace(/["`]/g,'').trim().split(String.fromCharCode(10))[0];if(q)base=q;}}catch(e){}
+    var y=new Date().getFullYear();
+    var term=base+' AND ('+(y-5)+'[dp] : '+y+'[dp])';
+    var d=await callBackend({action:'pubmed',term:term,retmax:6});
+    if(d&&d.items)evi=d.items;
+  }catch(e){}
+  if(evi.length)eviTxt=evi.map(function(it,i){return (i+1)+') '+it.title+' ('+(it.journal||'')+', '+(it.year||'')+'; PMID '+it.pmid+')';}).join('\n');
+  out.innerHTML=loading('2/2 · Avaliando o tema com base nas atualizações recentes...');
+  var prompt='Avalie PROFUNDAMENTE este tema para o Instagram do Dr. Tenner Nunes.\n\nTEMA: "'+t+'"\n\n'
+    +(eviTxt?('EVIDÊNCIAS RECENTES DO PUBMED (últimos 5 anos — considere o que há de mais atual e cite o ano quando relevante):\n'+eviTxt+'\n\n'):'')
+    +'Em Markdown, específico a ESTE tema:\n## Panorama atual\n2–3 linhas sobre o que há de mais recente/atualizado no tema'+(eviTxt?' (com base nas evidências acima)':'')+'.\n## Força do tema\nNota 0–100 + frase de veredito.\n## 4 dimensões\nNota + 1 linha cada: Relevância ao nicho; Potencial emocional; Gancho/curiosidade; Originalidade/viral.\n## Riscos de conformidade CFM\nEspecíficos + como contornar.\n## 5 ângulos criativos e originais\n## Plano de publicações\nReel, Carrossel, Story, História real e institucional — cada um com gancho original.'+briefDirectives();
+  try{
+    var txt=await ask(prompt,4000);
+    var eviCard;
+    if(evi.length){eviCard='<div class="handoff" style="margin-bottom:10px">🔎 <b>Últimas atualizações consideradas (PubMed · 5 anos):</b><br>'+evi.map(function(it){return '• <a href="'+it.url+'" target="_blank" rel="noopener">'+esc(it.title)+'</a> <span class="tk">'+esc((it.journal||'')+' · '+(it.year||''))+'</span>';}).join('<br>')+'</div>';}
+    else{eviCard='<div class="handoff" style="margin-bottom:10px">🔎 Não encontrei artigos recentes no PubMed para este tema — a avaliação seguiu com o conhecimento do modelo. Refine o tema (ou use a aba Evidências) e avalie de novo.</div>';}
+    out.innerHTML=eviCard+edBlock(txt);
+  }catch(err){out.innerHTML='<div class="errbox"><b>Erro:</b> '+esc(err.message)+'</div>';}
+  finally{btn.disabled=false;}
+}
 function gerarRoteiro(){if(needTema('outRot'))return;var t=getTema(),f=document.getElementById('formatoRoteiro').value,v=document.getElementById('contaRoteiro').value;run('outRot','btnRot','Crie um ROTEIRO completo, ORIGINAL e com potencial viral.\n\nTEMA: "'+t+'"\nFORMATO: '+f+'\nVOZ: '+v+'\n\nInclua: gancho de 3s inédito; desenvolvimento (uma ideia por trecho); CTA que gera comentário; marcação de tempos/telas (Reel/Story) ou card a card (Carrossel); LEGENDA pronta com nota de individualização e assinatura correta; 6–8 hashtags. Markdown.'+briefDirectives(),3900);}
 function gerarLegendas(){if(needTema('outLeg'))return;var t=getTema(),tom=document.getElementById('tomLeg').value;run('outLeg','btnLeg','Escreva 3 variações de LEGENDA de Instagram sobre "'+t+'", em tom '+tom+'. Cada variação: gancho forte na 1ª linha + corpo curto + CTA que gera comentário (pergunta fácil) + nota de individualização/avaliação médica + assinatura correta. No fim, um bloco com 8 hashtags relevantes. Markdown, separando as 3 variações.',3200);}
 function gerarArte(){if(needTema('outImg'))return;var t=getTema(),f=document.getElementById('fmtImg').value;run('outImg','btnImg','Crie a DIREÇÃO DE ARTE para uma '+f+' sobre "'+t+'", na identidade do Instituto Vitality (fundo VERDE da marca — verde esmeralda/floresta profundo, elegante e clínico —, dourado #C9A44C, tipografia serifada elegante, ar editorial premium; opção de foto do Dr. Tenner). Entregue em Markdown:\n## Conceito visual\n## Composição / layout\n## Paleta e tipografia\n## Texto sugerido na arte (curto)\n## Prompt de imagem (em inglês)\nUm prompt detalhado, pronto para colar no Ideogram, Google Gemini ou Canva para renderizar.'+briefDirectives(),3000);}
@@ -483,7 +567,7 @@ async function gerarCarrossel(){
     html+='<div class="carcard"><div class="carnum">SLIDE '+(j+1)+'</div><img src="'+imgs[j].src+'" alt="slide '+(j+1)+'"><a class="go alt" href="'+imgs[j].src+'" download="'+imgs[j].fn+'">Baixar slide '+(j+1)+'</a></div>';
   }
   html+='</div>';
-  if(plano.legenda){var cap='## Legenda'+NL+plano.legenda+(plano.hashtags?(NL+NL+plano.hashtags):'');html+='<div class="mdout" style="margin-top:16px">'+md(cap)+'<button class="copybtn" data-full="'+esc((plano.legenda||'')+NL+NL+(plano.hashtags||''))+'" onclick="copiarTxt(this)">Copiar legenda</button></div>';}
+  if(plano.legenda){var cap='## Legenda'+NL+plano.legenda+(plano.hashtags?(NL+NL+plano.hashtags):'');html+='<div style="margin-top:16px">'+edBlock(cap)+'</div>';}
   out.innerHTML=html;
   var okimgs=imgs.filter(function(x){return x.src;});
   var bt=document.getElementById('btnBaixarTodas');
