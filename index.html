@@ -486,9 +486,9 @@ async function avaliarTema(){
     var base=t;
     try{var q=await ask('Converta o tema "'+t+'" em uma QUERY de busca do PubMed em INGLES, curta e eficaz (termos MeSH e AND/OR quando ajudar). Responda APENAS a query, sem aspas.',150);if(q){q=q.replace(/["`]/g,'').trim().split(String.fromCharCode(10))[0];if(q)base=q;}}catch(e){}
     var y=new Date().getFullYear();
-    var term=base+' AND ('+(y-5)+'[dp] : '+y+'[dp])';
-    var d=await callBackend({action:'pubmed',term:term,retmax:6});
-    if(d&&d.items)evi=d.items;
+    var d=await callBackend({action:'pubmed',term:base+' AND ('+(y-5)+'[dp] : '+y+'[dp])',retmax:6});
+    if(d&&d.items&&d.items.length)evi=d.items;
+    if(!evi.length){var d2=await callBackend({action:'pubmed',term:base,retmax:6});if(d2&&d2.items)evi=d2.items;}
   }catch(e){}
   if(evi.length)eviTxt=evi.map(function(it,i){return (i+1)+') '+it.title+' ('+(it.journal||'')+', '+(it.year||'')+'; PMID '+it.pmid+')';}).join('\n');
   out.innerHTML=loading('2/2 · Avaliando o tema com base nas atualizações recentes...');
@@ -498,7 +498,7 @@ async function avaliarTema(){
   try{
     var txt=await ask(prompt,4000);
     var eviCard;
-    if(evi.length){eviCard='<div class="handoff" style="margin-bottom:10px">🔎 <b>Últimas atualizações consideradas (PubMed · 5 anos):</b><br>'+evi.map(function(it){return '• <a href="'+it.url+'" target="_blank" rel="noopener">'+esc(it.title)+'</a> <span class="tk">'+esc((it.journal||'')+' · '+(it.year||''))+'</span>';}).join('<br>')+'</div>';}
+    if(evi.length){eviCard='<div class="handoff" style="margin-bottom:10px">🔎 <b>Últimas atualizações consideradas (PubMed):</b><br>'+evi.map(function(it){return '• <a href="'+it.url+'" target="_blank" rel="noopener">'+esc(it.title)+'</a> <span class="tk">'+esc((it.journal||'')+' · '+(it.year||''))+'</span>';}).join('<br>')+'</div>';}
     else{eviCard='<div class="handoff" style="margin-bottom:10px">🔎 Não encontrei artigos recentes no PubMed para este tema — a avaliação seguiu com o conhecimento do modelo. Refine o tema (ou use a aba Evidências) e avalie de novo.</div>';}
     out.innerHTML=eviCard+edBlock(txt);
   }catch(err){out.innerHTML='<div class="errbox"><b>Erro:</b> '+esc(err.message)+'</div>';}
