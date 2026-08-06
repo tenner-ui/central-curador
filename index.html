@@ -314,6 +314,7 @@
   <div class="tk">Alcance no Explorar · não-seguidores · usa o tema central</div><h3>🚀 Explorar (Alcance)</h3>
   <p class="sub">O algoritmo está privilegiando a descoberta por <b>não-seguidores</b> no Explorar. Esta aba cria um pacote de conteúdo desenhado pra isso: gancho pra quem não te conhece, retenção, <b>SEO</b> (palavras que as pessoas buscam) e gatilhos de <b>SALVAR</b> e <b>COMPARTILHAR</b>.</p>
   <div class="selrow">
+    <select id="expTema"><option value="">Tema do Plano 50k (opcional)…</option></select>
     <select id="expFormato">
       <option value="Reel (prioridade máxima de distribuição no Explorar)">🎬 Reel (prioridade no Explorar)</option>
       <option value="Carrossel salvável (alto índice de saves)">🖼 Carrossel salvável</option>
@@ -406,7 +407,7 @@ var LP=[['https://aistudio.google.com/','Google AI'],['https://opal.withgoogle.c
 document.getElementById('launchpad').innerHTML='<span class="lplab">Ferramentas de IA:</span>'+LP.map(function(l){return '<a href="'+l[0]+'" target="_blank" rel="noopener">'+l[1]+'</a>';}).join('');
 
 /* ===== tabs / tema / dicas ===== */
-function switchTab(btn){document.querySelectorAll('.tabbar button').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');document.querySelectorAll('.tabpane').forEach(function(p){p.classList.remove('active');});document.getElementById('tab-'+btn.getAttribute('data-tab')).classList.add('active');if(btn.getAttribute('data-tab')==='atlas'){atlasOpen();}if(btn.getAttribute('data-tab')==='plano'){try{if(planoGetCal())planoShow('avaliacao');}catch(e){}}if(btn.getAttribute('data-tab')==='stories'){stInit();}if(btn.getAttribute('data-tab')==='educacao'){var _ef=document.getElementById('eduFrame');if(_ef&&!_ef.src)_ef.src='estudo.html';}}
+function switchTab(btn){document.querySelectorAll('.tabbar button').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');document.querySelectorAll('.tabpane').forEach(function(p){p.classList.remove('active');});document.getElementById('tab-'+btn.getAttribute('data-tab')).classList.add('active');if(btn.getAttribute('data-tab')==='atlas'){atlasOpen();}if(btn.getAttribute('data-tab')==='plano'){try{if(planoGetCal())planoShow('avaliacao');}catch(e){}}if(btn.getAttribute('data-tab')==='stories'){stInit();}if(btn.getAttribute('data-tab')==='educacao'){var _ef=document.getElementById('eduFrame');if(_ef&&!_ef.src)_ef.src='estudo.html';}if(btn.getAttribute('data-tab')==='explorar'){expInit();}}
 function getTema(){return document.getElementById('temaCentral').value.trim();}
 function setTema(el){document.getElementById('temaCentral').value=el.textContent;try{localStorage.setItem('curador_tema',el.textContent);}catch(e){}}
 document.getElementById('temaCentral').addEventListener('input',function(){try{localStorage.setItem('curador_tema',this.value);}catch(e){}});
@@ -1079,6 +1080,15 @@ function gerarStories(){
 }
 
 /* ===== Explorar (alcance / descoberta por não-seguidores) ===== */
+async function expInit(){
+  var sel=document.getElementById('expTema');if(!sel||sel.dataset.loaded)return;
+  if(!STPLAN){try{var r=await fetch(STORE,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'get',key:'plano50k'})});var d=await r.json();var p=(d&&d.plano)||d;if(p&&p.meses)STPLAN=p;}catch(e){}}
+  if(!STPLAN||!STPLAN.meses)return;
+  var opts='<option value="">Tema do Plano 50k (opcional)…</option>';
+  STPLAN.meses.forEach(function(m){(m.pecas||[]).forEach(function(c){if(c&&c.tema){opts+='<option value="'+esc(c.tema)+'">'+esc((m.mes||'')+' · '+(c.formato||'')+' — '+c.tema)+'</option>';}});});
+  sel.innerHTML=opts;sel.dataset.loaded='1';
+  sel.onchange=function(){if(sel.value){var inp=document.getElementById('temaCentral');inp.value=sel.value;inp.dispatchEvent(new Event('input',{bubbles:true}));}};
+}
 function gerarExplorar(){
   if(needTema('outExp'))return;
   var t=getTema(),f=document.getElementById('expFormato').value,o=document.getElementById('expObjetivo').value;
