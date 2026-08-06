@@ -1,15 +1,7 @@
 <!DOCTYPE html>
-<script type="application/json" id="cowork-artifact-meta">
-{
-  "name": "Hormonelab Guia Clinico",
-  "schemaVersion": 1,
-  "description": "Guia clínico interativo de hormônios da prática médica e do fisiculturismo: 38 agentes (AAS, GH/peptídeos/insulina, tireoide, SERMs/IA/HCG, endógenos) com molécula 3D via PubChem, efeitos, colaterais, manejo, indicações, uso no fisiculturismo, classificação e monitorização. Abas de Biblioteca, Indicações e Sobre.",
-  "mcpTools": [],
-  "mcpServerNames": []
-}
-</script>
 <html lang="pt-BR">
 <head>
+<meta name="robots" content="noindex, nofollow">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Guia Clínico de Hormônios · Prática Médica & Fisiculturismo</title>
@@ -278,6 +270,7 @@ body{
       <div class="navtab" data-tab="colaterais"><span class="ni">🩹</span>Colaterais</div>
       <div class="navtab" data-tab="comparar"><span class="ni">📊</span>Comparar</div>
       <div class="navtab" data-tab="marcas"><span class="ni">🇧🇷</span>Marcas</div>
+      <div class="navtab" data-tab="pesquisa"><span class="ni">🔬</span>Pesquisa</div>
       <div class="navtab" data-tab="about"><span class="ni">ℹ️</span>Sobre</div>
     </div>
     <div class="list" id="list"></div>
@@ -2807,6 +2800,208 @@ function goItem(id){
   selectHormone(id);
 }
 
+/* ================= PESQUISA (console de pesquisa + IA) ================= */
+const PQ_SRC=[
+  {n:'PubMed', d:'Artigos, ensaios e revisões (NIH)', c:'#4d8bff', u:q=>`https://pubmed.ncbi.nlm.nih.gov/?term=${q}`},
+  {n:'ClinicalTrials.gov', d:'Ensaios clínicos e fases de estudo', c:'#2ee6c8', u:q=>`https://clinicaltrials.gov/search?term=${q}`},
+  {n:'Cochrane Library', d:'Revisões sistemáticas / meta-análises', c:'#9b6bff', u:q=>`https://www.cochranelibrary.com/en/search?searchBy=1&searchText=${q}`},
+  {n:'Epistemonikos', d:'Evidência sintetizada (matriz)', c:'#ffcf6b', u:q=>`https://www.epistemonikos.org/en/search?q=${q}`},
+  {n:'Europe PMC', d:'Texto completo + preprints', c:'#4be3a0', u:q=>`https://europepmc.org/search?query=${q}`},
+  {n:'Google Scholar', d:'Busca acadêmica ampla', c:'#8ea0ff', u:q=>`https://scholar.google.com/scholar?q=${q}`},
+  {n:'SciELO', d:'Literatura em português/BR', c:'#ff9b8a', u:q=>`https://search.scielo.org/?lang=pt&q=${q}`},
+  {n:'FDA — Drugs@FDA', d:'Aprovações e bulas (EUA)', c:'#6bd0ff', u:q=>`https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=BasicSearch.process&searchTerm=${q}`},
+  {n:'ANVISA — Bulário', d:'Registro e bula no Brasil', c:'#7be3a0', u:q=>`https://consultas.anvisa.gov.br/#/bulario/q/?nomeProduto=${q}`}
+];
+const PQ_TIPO={qualquer:'',rct:'randomized controlled trial',meta:'meta-analysis OR systematic review',guide:'guideline OR practice guideline',cohort:'cohort study OR observational',review:'review'};
+function pqStrip(s){return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
+function pqTokens(s){return pqStrip(s).split(/[^a-z0-9]+/).filter(w=>w.length>=3);}
+function pqHas(text,toks){const t=pqStrip(text);return toks.filter(w=>t.includes(w)).length;}
+function pqVal(id){const el=document.getElementById(id);return el?el.value.trim():'';}
+function renderPesquisa(){
+  main.innerHTML=`${disclaimer()}
+  <div class="indwrap">
+    <div class="indhead"><h2>🔬 Console de Pesquisa</h2>
+      <p>Diga o que quer pesquisar. O HormoneLab estrutura a pergunta, aponta as <b>melhores fontes</b>, cruza com a biblioteca interna e <b>monta um protocolo com base nos achados</b>. Educacional — não é prescrição.</p></div>
+
+    <div class="card sec full" style="margin-bottom:16px">
+      <h3><span class="ic" style="--icbg:rgba(46,230,200,.14)">❓</span> O que você quer pesquisar?</h3>
+      <div style="margin-top:8px"><label>Tema / pergunta clínica</label>
+        <textarea id="pq_q" style="width:100%;min-height:70px;padding:11px;border-radius:10px;border:1px solid var(--stroke);background:rgba(6,12,26,.7);color:var(--ink);font-size:13.5px;line-height:1.5;resize:vertical" placeholder="ex.: tirzepatida em pacientes com esteatose hepática; retatrutida vs semaglutida para perda de peso; TRT e risco cardiovascular..."></textarea></div>
+      <div class="avgrid" style="margin-top:10px">
+        <div><label>População (P)</label><input id="pq_p" type="text" placeholder="ex.: homens 40-60a, DM2"></div>
+        <div><label>Intervenção (I)</label><input id="pq_i" type="text" placeholder="ex.: tirzepatida"></div>
+        <div><label>Comparador (C)</label><input id="pq_c" type="text" placeholder="ex.: semaglutida / placebo"></div>
+        <div><label>Desfecho (O)</label><input id="pq_o" type="text" placeholder="ex.: perda de peso, HbA1c"></div>
+        <div><label>Tipo de evidência</label><select id="pq_tipo">
+          <option value="qualquer">Qualquer</option>
+          <option value="meta">Meta-análise / Revisão sistemática</option>
+          <option value="rct">Ensaio clínico randomizado</option>
+          <option value="guide">Diretriz / Guideline</option>
+          <option value="cohort">Coorte / Observacional</option>
+          <option value="review">Revisão narrativa</option>
+        </select></div>
+        <div><label>Objetivo do protocolo</label><select id="pq_goal"><option value="">— (não montar)</option>${Object.keys(GOAL_LABEL).map(k=>`<option value="${k}">${GOAL_LABEL[k]}</option>`).join('')}</select></div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+        <button class="calcbtn" onclick="organizarPesquisa()">🔎 Organizar pesquisa & montar protocolo</button>
+        <button class="calcbtn" style="background:linear-gradient(120deg,#9b6bff,#4d8bff)" onclick="document.getElementById('pq_ia').scrollIntoView({behavior:'smooth'})">🤖 Rodar com IA ao vivo</button>
+      </div>
+    </div>
+
+    <div id="pq_out"></div>
+
+    <div class="card sec full" id="pq_ia" style="margin-top:16px;border-color:rgba(155,107,255,.35)">
+      <h3><span class="ic" style="--icbg:rgba(155,107,255,.16)">🤖</span> IA ao vivo (opcional)</h3>
+      <p style="font-size:12px;color:var(--ink-faint);margin-bottom:8px">Para o <b>próprio app</b> pesquisar e redigir sozinho, cole uma chave de API da Anthropic. A chave fica <b>só na memória desta aba</b> (não é salva, não sai para lugar nenhum além da API oficial). Sem chave, use o botão acima — ele entrega tudo organizado + um prompt pronto para colar no bot HormoneLab.</p>
+      <div class="avgrid">
+        <div style="grid-column:1/-1"><label>Chave de API (sk-ant-...)</label><input id="pq_key" type="password" placeholder="cole aqui — não é salva" style="font-family:monospace"></div>
+        <div><label>Modelo</label><input id="pq_model" type="text" value="claude-sonnet-4-5" placeholder="ex.: claude-sonnet-4-5"></div>
+        <div style="display:flex;align-items:flex-end"><label class="chk" style="margin:0"><input type="checkbox" id="pq_web" checked> Usar busca na web</label></div>
+      </div>
+      <button class="calcbtn" style="margin-top:12px;background:linear-gradient(120deg,#9b6bff,#4d8bff)" onclick="pesquisaIAlive()">▶ Pesquisar com IA agora</button>
+      <div id="pq_ia_out" style="margin-top:12px"></div>
+    </div>
+  </div>`;
+  main.scrollTop=0;
+}
+
+function pqBuildQuery(){
+  const q=pqVal('pq_q'), P=pqVal('pq_p'), I=pqVal('pq_i'), C=pqVal('pq_c'), O=pqVal('pq_o');
+  let base=[I,C,O,P].filter(Boolean).join(' ');
+  if(!base) base=q;
+  const tipo=PQ_TIPO[pqVal('pq_tipo')||'qualquer']||'';
+  const full=(base+(tipo?(' AND ('+tipo+')'):'')).trim();
+  return {q,P,I,C,O,base,tipo,full};
+}
+function pqLibMatches(){
+  const parts=[pqVal('pq_q'),pqVal('pq_p'),pqVal('pq_i'),pqVal('pq_c'),pqVal('pq_o')].join(' ');
+  const toks=pqTokens(parts); if(!toks.length) return {horm:[],supp:[]};
+  const horm=H.map(h=>{const s=pqHas([h.nome,h.id,(h.efeitos||[]).join(' '),(h.colaterais||[]).join(' '),CATS[h.cat]?CATS[h.cat].label:''].join(' '),toks);return{h,s};})
+    .filter(x=>x.s>0).sort((a,b)=>b.s-a.s).slice(0,6).map(x=>x.h);
+  const allSupp=[...NATURAIS,...VITAMINAS,...ENZIMAS];
+  const supp=allSupp.map(o=>{const s=pqHas([o.nome,o.id,o.benef||o.funcao||'',o.efeitos||o.cuidados||''].join(' '),toks);return{o,s};})
+    .filter(x=>x.s>0).sort((a,b)=>b.s-a.s).slice(0,8).map(x=>x.o);
+  return {horm,supp};
+}
+function pqProtoScaffold(m){
+  if(!m.horm.length && !m.supp.length) return '';
+  const hb=m.horm.map(h=>`<div class="labitem"><div class="en">${h.nome} <span class="cphase" style="background:${CATS[h.cat].color}22;color:${CATS[h.cat].color}">${CATS[h.cat].label}</span></div>
+    <div class="ec" style="color:#9fe3c4"><b style="color:#4be3a0">Benefícios:</b> ${(h.efeitos||[]).slice(0,2).join('; ')}</div>
+    <div class="em" style="color:#ffbcae"><b style="color:#ff6b6b">Colaterais:</b> ${(h.colaterais||[]).slice(0,3).join('; ')}</div>
+    <div style="font-size:12px;color:var(--ink-faint);margin-top:4px"><b>Monitorização:</b> ${h.monit||'—'}</div></div>`).join('');
+  const sb=m.supp.map(o=>`<div class="labitem"><div class="en">🌿 ${o.nome}${o.evid?` <span class="cphase" style="background:${evidCor(o.evid)}22;color:${evidCor(o.evid)}">${o.evid}</span>`:''}</div>
+    <div class="ec" style="color:#9fe3c4"><b style="color:#4be3a0">Benefício:</b> ${o.benef||o.funcao||'—'}</div>
+    <div class="em" style="color:#ffbcae"><b style="color:#ff9b8a">Cuidados:</b> ${o.efeitos||o.cuidados||'—'}</div>
+    <div style="font-size:12px;color:var(--ink-faint);margin-top:4px"><b>Uso:</b> ${o.dose||'—'}${o.tirze?` · <b>+Tirze:</b> ${o.tirze}`:''}</div></div>`).join('');
+  const goal=pqVal('pq_goal');
+  return `<div class="card sec full" style="margin-top:16px">
+    <h3><span class="ic" style="--icbg:rgba(46,230,200,.14)">🧩</span> Protocolo a partir dos achados${goal?` — ${GOAL_LABEL[goal]}`:''}</h3>
+    <p style="font-size:12px;color:var(--ink-faint);margin-bottom:8px">Candidatos da sua biblioteca relevantes ao tema. Refine na aba <b>Protocolos</b> (com comparação Hormonal × Natural × Não fazer nada).</p>
+    ${hb?`<div class="cat" style="--catc:#4d8bff;margin:6px 0">💉 Hormônios / agentes</div>${hb}`:''}
+    ${sb?`<div class="cat" style="--catc:#4be3a0;margin:10px 0 6px">🌿 Naturais / vitaminas / enzimas</div>${sb}`:''}
+    <div class="disc" style="margin-top:12px"><span>⚠️</span><div>Seleção automática por palavras-chave — validar pertinência clínica. Individualizar dose e monitorização. Uso estético de anabolizantes é vedado no Brasil (Lei 9.965/2000).</div></div>
+  </div>`;
+}
+function pqAIPrompt(Q,m){
+  const ctx=[...m.horm.map(h=>h.nome),...m.supp.map(o=>o.nome)].join(', ')||'—';
+  const tipoLabel=(document.querySelector('#pq_tipo option:checked')||{}).textContent||'Qualquer';
+  const goal=pqVal('pq_goal');
+  return `Você é o HormoneLab, assistente clínico do Dr. Tenner. Faça uma PESQUISA baseada em evidência e organize os melhores achados, depois monte um protocolo.
+
+PERGUNTA: ${Q.q||'—'}
+PICO — População: ${Q.P||'—'} | Intervenção: ${Q.I||'—'} | Comparador: ${Q.C||'—'} | Desfecho: ${Q.O||'—'}
+Tipo de evidência priorizado: ${tipoLabel}
+${goal?`Objetivo do protocolo: ${GOAL_LABEL[goal]}`:''}
+Itens relevantes já na base HormoneLab: ${ctx}
+
+TAREFAS:
+1) Pesquise (PubMed, ClinicalTrials.gov, Cochrane, diretrizes, ANVISA/FDA/EMA) e traga os MELHORES achados atuais, priorizando maior nível de evidência. Para cada achado: fonte, ano, desenho, n, resultado principal e limitação.
+2) Organize em: (a) o que está bem estabelecido; (b) o que é promissor/em estudo (com fase); (c) o que é controverso ou sem suporte.
+3) Situação regulatória (Brasil/ANVISA — incluindo RDC 973/2025 e Portaria 344/98 quando pertinente; e FDA/EMA).
+4) Monte um PROTOCOLO baseado nos achados, comparando a rota hormonal (se indicada) × natural × não fazer nada, com benefícios, colaterais, doses/esquema, e MONITORIZAÇÃO laboratorial.
+5) Cite as referências ao final.
+
+Enquadramento: informação técnica para profissional de saúde; não é prescrição; muitos usos são off-label; uso estético de anabolizantes é vedado no Brasil (Lei 9.965/2000); nunca instruções de síntese ou de burla antidoping.`;
+}
+function organizarPesquisa(){
+  const out=document.getElementById('pq_out');
+  const Q=pqBuildQuery();
+  if(!Q.full){out.innerHTML=`<div class="card sec full"><p style="color:var(--ink-faint)">Descreva o tema ou preencha ao menos a Intervenção.</p></div>`;return;}
+  const enc=encodeURIComponent(Q.full);
+  const srcBtns=PQ_SRC.map(s=>`<a href="${s.u(enc)}" target="_blank" rel="noopener" class="labitem" style="display:block;text-decoration:none;border-left:3px solid ${s.c}">
+      <div class="en" style="color:${s.c}">${s.n} ↗</div>
+      <div style="font-size:12px;color:var(--ink-dim)">${s.d}</div></a>`).join('');
+  const m=pqLibMatches();
+  const chips=arr=>arr.length?arr.join(''):'<span style="color:var(--ink-faint);font-size:12px">nenhum item correspondente na base</span>';
+  const hormChips=m.horm.map(h=>`<span class="avopt" onclick="goItem('${h.id}')">${h.nome}</span>`).join('');
+  const suppChips=m.supp.map(o=>`<span class="avopt" style="cursor:default">${o.nome}</span>`).join('');
+  const prompt=pqAIPrompt(Q,m);
+  out.innerHTML=`
+  <div class="card sec full" style="margin-bottom:16px">
+    <h3><span class="ic" style="--icbg:rgba(77,139,255,.16)">🗺️</span> Plano de pesquisa</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+      ${chip('P (população)',Q.P||'—')}${chip('I (intervenção)',Q.I||'—')}${chip('C (comparador)',Q.C||'—')}${chip('O (desfecho)',Q.O||'—')}
+    </div>
+    <div style="margin-top:12px"><label style="font-size:12px;color:var(--ink-faint)">Estratégia de busca sugerida</label>
+      <textarea readonly style="width:100%;min-height:52px;padding:10px;border-radius:9px;border:1px solid var(--stroke);background:rgba(6,12,26,.7);color:var(--ink);font-size:12.5px;resize:vertical">${Q.full.replace(/</g,'&lt;')}</textarea></div>
+  </div>
+
+  <div class="card sec full" style="margin-bottom:16px">
+    <h3><span class="ic" style="--icbg:rgba(46,230,200,.14)">📚</span> Melhores fontes — abrir busca (nova janela)</h3>
+    <div class="grid2" style="margin-top:8px">${srcBtns}</div>
+  </div>
+
+  <div class="card sec full" style="margin-bottom:16px">
+    <h3><span class="ic" style="--icbg:rgba(155,107,255,.16)">🔗</span> Achados na biblioteca HormoneLab</h3>
+    <div style="margin-top:6px"><b style="font-size:12px;color:var(--ink-dim)">💉 Hormônios / agentes (abrir ficha):</b><br>${chips([hormChips])}</div>
+    <div style="margin-top:10px"><b style="font-size:12px;color:var(--ink-dim)">🌿 Naturais / vitaminas / enzimas:</b><br>${chips([suppChips])}</div>
+  </div>
+
+  ${pqProtoScaffold(m)}
+
+  <div class="card sec full" style="margin-top:16px">
+    <h3><span class="ic" style="--icbg:rgba(155,107,255,.16)">🤖</span> Prompt pronto para a IA (bot HormoneLab)</h3>
+    <p style="font-size:12px;color:var(--ink-faint);margin-bottom:8px">Copie e cole no bot para a síntese com busca ao vivo — ou use o painel "IA ao vivo" abaixo.</p>
+    <textarea readonly style="width:100%;min-height:230px;padding:12px;border-radius:10px;border:1px solid var(--stroke);background:rgba(6,12,26,.7);color:var(--ink);font-size:12.5px;line-height:1.5;resize:vertical">${prompt.replace(/</g,'&lt;')}</textarea>
+    <button class="calcbtn" style="margin-top:10px" onclick="navigator.clipboard&&navigator.clipboard.writeText(this.previousElementSibling.value);this.textContent='✔ Copiado'">Copiar prompt</button>
+  </div>`;
+  window._pqPrompt=prompt;
+  out.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+async function pesquisaIAlive(){
+  const box=document.getElementById('pq_ia_out');
+  const key=pqVal('pq_key'), model=pqVal('pq_model')||'claude-sonnet-4-5';
+  if(!key){box.innerHTML=`<div class="disc"><span>🔑</span><div>Cole uma chave de API para usar o modo ao vivo, ou use o botão "Organizar pesquisa" (não precisa de chave).</div></div>`;return;}
+  const Q=pqBuildQuery();
+  if(!Q.full){box.innerHTML=`<div class="disc"><span>⚠️</span><div>Descreva o tema primeiro.</div></div>`;return;}
+  const prompt=window._pqPrompt||pqAIPrompt(Q,pqLibMatches());
+  box.innerHTML=`<div class="labitem"><div class="en">⏳ Pesquisando com IA…</div><div style="font-size:12px;color:var(--ink-dim)">Pode levar de 20s a 1min se a busca na web estiver ativa.</div></div>`;
+  const body={model,max_tokens:4096,messages:[{role:'user',content:prompt}]};
+  if(document.getElementById('pq_web')&&document.getElementById('pq_web').checked){
+    body.tools=[{type:'web_search_20250305',name:'web_search',max_uses:6}];
+  }
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify(body)});
+    const data=await resp.json();
+    if(!resp.ok){
+      const msg=(data&&data.error&&data.error.message)||('HTTP '+resp.status);
+      box.innerHTML=`<div class="disc"><span>❌</span><div><b>Falha na API:</b> ${String(msg).replace(/</g,'&lt;')}<br><span style="font-size:12px">Verifique a chave e o nome do modelo (campo "Modelo"). Se o erro citar a ferramenta de busca, desmarque "Usar busca na web".</span></div></div>`;
+      return;
+    }
+    const txt=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n\n').trim()||'(sem texto na resposta)';
+    const esc=txt.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    box.innerHTML=`<div class="card sec full" style="border-color:rgba(155,107,255,.35)">
+      <h3><span class="ic" style="--icbg:rgba(155,107,255,.16)">✅</span> Resultado da IA</h3>
+      <div style="white-space:pre-wrap;line-height:1.6;font-size:13px;color:var(--ink)">${esc}</div>
+      <button class="calcbtn" style="margin-top:12px" onclick="navigator.clipboard&&navigator.clipboard.writeText(${JSON.stringify(txt)});this.textContent='✔ Copiado'">Copiar resultado</button>
+    </div>`;
+    box.scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(e){
+    box.innerHTML=`<div class="disc"><span>❌</span><div><b>Erro de rede/CORS:</b> ${String(e.message||e).replace(/</g,'&lt;')}<br><span style="font-size:12px">Alguns navegadores bloqueiam chamadas diretas em arquivos locais. Nesse caso, use o prompt pronto no bot HormoneLab.</span></div></div>`;
+  }
+}
+
 /* ---- Sobre ---- */
 function renderAbout(){
   main.innerHTML = `${disclaimer()}
@@ -2836,6 +3031,7 @@ document.querySelectorAll('.navtab').forEach(t=>t.onclick=()=>{
   else if(tab==='protocolos') renderProtocolos();
   else if(tab==='colaterais') renderColaterais();
   else if(tab==='marcas') renderMarcas();
+  else if(tab==='pesquisa') renderPesquisa();
   else if(tab==='about') renderAbout();
   else renderLib();
   updateListVis();
