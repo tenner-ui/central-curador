@@ -187,6 +187,7 @@
   <button class="active" data-tab="avaliador" onclick="switchTab(this)">⚖ Avaliar Tema</button>
   <button data-tab="gerador" onclick="switchTab(this)">🎬 Roteiros</button>
   <button data-tab="stories" onclick="switchTab(this)">📲 Stories da Semana</button>
+  <button data-tab="explorar" onclick="switchTab(this)">🚀 Explorar</button>
   <button data-tab="aulas" onclick="switchTab(this)">🎓 Aulas</button>
   <button data-tab="educacao" onclick="switchTab(this)">📚 Educação</button>
   <button data-tab="legendas" onclick="switchTab(this)">✍️ Legendas & Hashtags</button>
@@ -307,6 +308,26 @@
   <div class="handoff">Rascunho editável seguindo o compliance CFM (sem "especialista", molécula não marca, individualização, disclaimer educativo). Cada tela traz objetivo, texto na tela, figurinha e fala.</div>
   <div id="stSemInfo" style="margin-top:10px"></div>
   <div class="outwrap" id="outStories"></div>
+</div></section>
+
+<section class="tabpane" id="tab-explorar"><div class="tool">
+  <div class="tk">Alcance no Explorar · não-seguidores · usa o tema central</div><h3>🚀 Explorar (Alcance)</h3>
+  <p class="sub">O algoritmo está privilegiando a descoberta por <b>não-seguidores</b> no Explorar. Esta aba cria um pacote de conteúdo desenhado pra isso: gancho pra quem não te conhece, retenção, <b>SEO</b> (palavras que as pessoas buscam) e gatilhos de <b>SALVAR</b> e <b>COMPARTILHAR</b>.</p>
+  <div class="selrow">
+    <select id="expFormato">
+      <option value="Reel (prioridade máxima de distribuição no Explorar)">🎬 Reel (prioridade no Explorar)</option>
+      <option value="Carrossel salvável (alto índice de saves)">🖼 Carrossel salvável</option>
+      <option value="Foto única com texto forte">🖼 Foto única</option>
+    </select>
+    <select id="expObjetivo">
+      <option value="salvamentos">Otimizar p/ SALVAR</option>
+      <option value="compartilhamentos">Otimizar p/ COMPARTILHAR</option>
+      <option value="retencao/watch-time">Otimizar p/ RETENÇÃO</option>
+    </select>
+    <button class="go" id="btnExp" onclick="gerarExplorar()">🚀 Gerar pacote de alcance</button>
+  </div>
+  <div class="handoff">Otimizado para descoberta: gancho de não-seguidor, SEO de legenda/tela, CTA de salvar/compartilhar, hashtags nicho+amplo. Compliance CFM mantido (sem "especialista", molécula não marca, individualização, disclaimer). Texto editável.</div>
+  <div class="outwrap" id="outExp"></div>
 </div></section>
 
 <section class="tabpane" id="tab-legendas"><div class="tool">
@@ -1055,6 +1076,15 @@ function gerarStories(){
   var base=w.pecas.map(function(c,i){return (i+1)+') ['+(c.formato||'')+'] '+(c.tema||'')+(c.gancho?(' | gancho: '+c.gancho):'')+(c.cta?(' | cta: '+c.cta):'');}).join(NL);
   var prompt='Monte uma SEQUÊNCIA COMPLETA de STORIES do Instagram para UMA SEMANA (7 a 9 telas), na VOZ '+voz+', que aqueça e sustente os posts principais desta semana do Plano 50k.'+NL+NL+'MÊS: '+mes+NL+'PEÇAS-BASE DA SEMANA:'+NL+base+NL+NL+'A sequência deve ter arco: (1) tela de ABERTURA/gancho da semana; (2 e 3) mini-conteúdo educativo começando pela FISIOLOGIA; (4) BASTIDOR do Dr. Tenner como empresário e dono de clínica (Instituto Vitality) — nunca plantão/hospital; (5) figurinha de ENQUETE ou QUIZ com pergunta binária; (6) PROVA SOCIAL/autoridade SEM antes-e-depois e sem promessa; (7) chamada para o POST principal da semana; (8) CTA final (caixa de PERGUNTA ou agendamento com individualização). Distribua as telas ao longo dos dias da semana.'+NL+NL+'Para CADA story use este formato em Markdown:'+NL+'### Story N — [tipo] · [dia sugerido]'+NL+'- **Objetivo:** ...'+NL+'- **Visual/tela:** ...'+NL+'- **Texto na tela:** "..." (curto, grande)'+NL+'- **Figurinha:** enquete/quiz/pergunta/contagem/link — com as opções'+NL+'- **Fala/legenda:** 1–2 frases'+NL+NL+'Compliance CFM obrigatório: nada de "especialista"; medicamento pela molécula, nunca marca; nunca a palavra "soroterapia"; toda menção a tratamento com individualização + avaliação médica; sem promessa/quilos/prazo; registro educativo; assinatura correta (Médico — pós-graduando em Endocrinologia e Metabologia, CRM/RR 2920). Comece direto na Story 1.'+briefDirectives();
   run('outStories','btnStories',prompt,4200);
+}
+
+/* ===== Explorar (alcance / descoberta por não-seguidores) ===== */
+function gerarExplorar(){
+  if(needTema('outExp'))return;
+  var t=getTema(),f=document.getElementById('expFormato').value,o=document.getElementById('expObjetivo').value;
+  var NL=String.fromCharCode(10),isReel=/Reel/.test(f);
+  var prompt='Você é um ESTRATEGISTA SÊNIOR de ALCANCE e DESCOBERTA no EXPLORAR do Instagram. O algoritmo está privilegiando a distribuição para NÃO SEGUIDORES: o conteúdo precisa parar quem nunca viu o Dr. Tenner, gerar SALVAMENTOS e COMPARTILHAMENTOS, ter alta retenção e ser indexável na busca (SEO do Instagram: legenda, texto na tela e alt text).'+NL+NL+'TEMA: "'+t+'"'+NL+'FORMATO: '+f+NL+'OBJETIVO PRINCIPAL: maximizar '+o+'.'+NL+NL+'Crie um PACOTE DE ALCANCE em Markdown, específico a ESTE tema, começando pela FISIOLOGIA (nunca por frase negativa), com estas seções:'+NL+'## Ângulo de descoberta'+NL+'Por que um NÃO seguidor pararia — entrada universal/relatable que puxa pra fisiologia. Nada que dependa de já te conhecer.'+NL+'## 3 ganchos de não-seguidor (0–3s)'+NL+'Frases de abertura testáveis, para quem nunca te viu.'+NL+'## Estrutura de retenção'+NL+(isReel?'Cena a cena com tempos, padrão de retenção e um loop/recompensa no fim que aumenta o replay.':'Card a card: promessa no card 1 e recompensa (framework/checklist) que faz salvar.')+NL+'## Texto na tela (SEO)'+NL+'Palavras-chave que as pessoas realmente BUSCAM sobre o tema, escritas na tela para indexação.'+NL+'## Legenda otimizada para busca'+NL+'Primeira linha rica em palavra-chave (SEO), corpo curto e escaneável, nota de individualização/avaliação médica e assinatura correta.'+NL+'## CTA de SALVAR e COMPARTILHAR'+NL+'CTAs específicos que geram save e send para DM (não só comentário).'+NL+'## Elemento salvável + frase compartilhável'+NL+'Um mini-framework/checklist para salvar e UMA frase-verdade curta para compartilhar.'+NL+'## Hashtags de descoberta'+NL+'8–12, misturando nicho + amplo + termos de busca.'+NL+'## Alt text (busca)'+NL+'Texto alternativo descritivo com palavras-chave.'+(isReel?(NL+'## Áudio/tendência'+NL+'Tipo de áudio recomendado (fala original vs. trending) para maximizar distribuição.'):'')+NL+NL+'Compliance CFM obrigatório: nunca a palavra "especialista" para o Dr. Tenner; medicamento pela molécula (nunca marca); nunca "soroterapia"; individualização + avaliação médica; sem promessa/quilos/prazo; registro educativo; assinatura correta (Médico — pós-graduando em Endocrinologia e Metabologia, CRM/RR 2920).'+briefDirectives();
+  run('outExp','btnExp',prompt,4300);
 }
 
 /* ===== init: restaura tema/provedor, carrega modelos do backend ===== */
