@@ -188,6 +188,7 @@
   <button data-tab="gerador" onclick="switchTab(this)">🎬 Roteiros</button>
   <button data-tab="stories" onclick="switchTab(this)">📲 Stories da Semana</button>
   <button data-tab="aulas" onclick="switchTab(this)">🎓 Aulas</button>
+  <button data-tab="educacao" onclick="switchTab(this)">📚 Educação</button>
   <button data-tab="legendas" onclick="switchTab(this)">✍️ Legendas & Hashtags</button>
   <button data-tab="evidencias" onclick="switchTab(this)">🔬 Evidências (PubMed)</button>
   <button data-tab="referencia" onclick="switchTab(this)">🔎 Analisar Referência</button>
@@ -219,6 +220,15 @@
   </div>
   <div class="handoff">Regras do Dr. Tenner aplicadas: liderar pela fisiologia (sem frases negativas), sem medicamentos no conteúdo leigo, aviso educativo em toda legenda e CTA de agendamento.</div>
   <div class="outwrap" id="outAula"></div>
+</div></section>
+
+<section class="tabpane" id="tab-educacao"><div class="tool">
+  <div class="tk">Guia clínico · referência de estudo</div><h3>📚 Educação</h3>
+  <p class="sub">Guia Clínico de Hormônios — material de estudo e referência (uso educativo/profissional). Abre aqui dentro; se preferir, use tela cheia.</p>
+  <div class="selrow"><a class="go" href="estudo.html" target="_blank" rel="noopener">↗ Abrir em tela cheia</a></div>
+  <div style="margin-top:14px;border:1px solid #333;border-radius:14px;overflow:hidden;background:#fff">
+    <iframe id="eduFrame" title="Guia Clínico de Hormônios" style="width:100%;height:80vh;border:0;display:block" loading="lazy"></iframe>
+  </div>
 </div></section>
 
 <section class="tabpane" id="tab-atlas"><div class="tool">
@@ -375,7 +385,7 @@ var LP=[['https://aistudio.google.com/','Google AI'],['https://opal.withgoogle.c
 document.getElementById('launchpad').innerHTML='<span class="lplab">Ferramentas de IA:</span>'+LP.map(function(l){return '<a href="'+l[0]+'" target="_blank" rel="noopener">'+l[1]+'</a>';}).join('');
 
 /* ===== tabs / tema / dicas ===== */
-function switchTab(btn){document.querySelectorAll('.tabbar button').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');document.querySelectorAll('.tabpane').forEach(function(p){p.classList.remove('active');});document.getElementById('tab-'+btn.getAttribute('data-tab')).classList.add('active');if(btn.getAttribute('data-tab')==='atlas'){atlasOpen();}if(btn.getAttribute('data-tab')==='plano'){try{if(planoGetCal())planoShow('avaliacao');}catch(e){}}if(btn.getAttribute('data-tab')==='stories'){stInit();}}
+function switchTab(btn){document.querySelectorAll('.tabbar button').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');document.querySelectorAll('.tabpane').forEach(function(p){p.classList.remove('active');});document.getElementById('tab-'+btn.getAttribute('data-tab')).classList.add('active');if(btn.getAttribute('data-tab')==='atlas'){atlasOpen();}if(btn.getAttribute('data-tab')==='plano'){try{if(planoGetCal())planoShow('avaliacao');}catch(e){}}if(btn.getAttribute('data-tab')==='stories'){stInit();}if(btn.getAttribute('data-tab')==='educacao'){var _ef=document.getElementById('eduFrame');if(_ef&&!_ef.src)_ef.src='estudo.html';}}
 function getTema(){return document.getElementById('temaCentral').value.trim();}
 function setTema(el){document.getElementById('temaCentral').value=el.textContent;try{localStorage.setItem('curador_tema',el.textContent);}catch(e){}}
 document.getElementById('temaCentral').addEventListener('input',function(){try{localStorage.setItem('curador_tema',this.value);}catch(e){}});
