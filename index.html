@@ -13,6 +13,7 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 <link rel="manifest" href="manifest.webmanifest">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
   :root{--dark:#0a0a0a;--panel:#141414;--panel2:#1f1f1f;--gold:#C9A44C;--gold2:#E7C36B;--cream:#F7F3EC;--ink:#2b2620;--muted:#6f665a;--line:#e8d6cf;}
   *{box-sizing:border-box;}
@@ -184,6 +185,7 @@
   <a href="plano.html" title="Curador Executado — Plano 50k" style="display:inline-flex;align-items:center;color:#2a1207;background:var(--gold);font-family:'Helvetica Neue',Arial,sans-serif;font-size:13.5px;font-weight:700;padding:8px 14px;margin:6px 8px 6px 0;border-radius:8px;text-decoration:none;white-space:nowrap">📈 Plano 50k</a>
   <button data-tab="atlas" onclick="switchTab(this)">🧭 ATLAS</button>
   <button data-tab="plano" onclick="switchTab(this)">📋 Plano do Mês</button>
+  <button data-tab="criar" onclick="switchTab(this)">🗓️ Criar Calendário</button>
   <button class="active" data-tab="avaliador" onclick="switchTab(this)">⚖ Avaliar Tema</button>
   <button data-tab="gerador" onclick="switchTab(this)">🎬 Roteiros</button>
   <button data-tab="stories" onclick="switchTab(this)">📲 Stories da Semana</button>
@@ -331,6 +333,25 @@
   <div class="outwrap" id="outExp"></div>
 </div></section>
 
+<section class="tabpane" id="tab-criar"><div class="tool">
+  <div class="tk">Gera um mês novo · pilares 40/25/20/15 · memória do Curador + assuntos quentes</div><h3>🗓️ Criar Calendário</h3>
+  <p class="sub">Cria um <b>mês inteiro</b> seguindo o Manual de Marca: intenções <b>Educar 40% · Autoridade 25% · Conexão 20% · Direcionar 15%</b>, cadência (Reels / Carrossel / Feed), banco de ganchos e funil. Os temas nascem da <b>memória do Curador</b> e dos <b>assuntos mais quentes do momento</b> no seu nicho.</p>
+  <div class="selrow">
+    <select id="criarMes"><option value="Janeiro">Janeiro</option><option value="Fevereiro">Fevereiro</option><option value="Março">Março</option><option value="Abril">Abril</option><option value="Maio">Maio</option><option value="Junho">Junho</option><option value="Julho">Julho</option><option value="Agosto">Agosto</option><option value="Setembro">Setembro</option><option value="Outubro">Outubro</option><option value="Novembro">Novembro</option><option value="Dezembro">Dezembro</option></select>
+    <input id="criarAno" type="number" min="2025" max="2030" value="2026" style="width:92px" />
+    <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;white-space:nowrap"><input type="checkbox" id="criarPesq" checked /> Pesquisar assuntos quentes (web/PubMed)</label>
+    <button class="go" id="btnCriar" onclick="gerarCalendarioMes()">🗓️ Gerar mês</button>
+  </div>
+  <div class="selrow" style="margin-top:6px">
+    <input id="criarT1" value="Emagrecimento metabólico" style="flex:1;min-width:150px" />
+    <input id="criarT2" value="Saúde hormonal" style="flex:1;min-width:130px" />
+    <input id="criarT3" value="Longevidade e energia" style="flex:1;min-width:150px" />
+  </div>
+  <div class="handoff">Rascunho editável em conformidade CFM (medicamento pela molécula, nunca marca; sem "especialista"; individualização + avaliação médica; disclaimer nas peças de tratamento; @drtennernunes e @instituto.vitality separadas). Edite direto na tabela e clique em <b>Salvar mês no Plano 50k</b>.</div>
+  <div id="criarResumo" style="margin-top:10px"></div>
+  <div class="outwrap" id="outCriar"></div>
+</div></section>
+
 <section class="tabpane" id="tab-legendas"><div class="tool">
   <div class="tk">IA · usa o tema central</div><h3>✍️ Legendas & Hashtags</h3>
   <p class="sub">3 variações de legenda prontas para o tema central, com gancho, CTA que gera comentário, nota de conformidade e hashtags.</p>
@@ -407,7 +428,7 @@ var LP=[['https://aistudio.google.com/','Google AI'],['https://opal.withgoogle.c
 document.getElementById('launchpad').innerHTML='<span class="lplab">Ferramentas de IA:</span>'+LP.map(function(l){return '<a href="'+l[0]+'" target="_blank" rel="noopener">'+l[1]+'</a>';}).join('');
 
 /* ===== tabs / tema / dicas ===== */
-function switchTab(btn){document.querySelectorAll('.tabbar button').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');document.querySelectorAll('.tabpane').forEach(function(p){p.classList.remove('active');});document.getElementById('tab-'+btn.getAttribute('data-tab')).classList.add('active');if(btn.getAttribute('data-tab')==='atlas'){atlasOpen();}if(btn.getAttribute('data-tab')==='plano'){try{if(planoGetCal())planoShow('avaliacao');}catch(e){}}if(btn.getAttribute('data-tab')==='stories'){stInit();}if(btn.getAttribute('data-tab')==='educacao'){var _ef=document.getElementById('eduFrame');if(_ef&&!_ef.src)_ef.src='estudo.html';}if(btn.getAttribute('data-tab')==='explorar'){expInit();}}
+function switchTab(btn){document.querySelectorAll('.tabbar button').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');document.querySelectorAll('.tabpane').forEach(function(p){p.classList.remove('active');});document.getElementById('tab-'+btn.getAttribute('data-tab')).classList.add('active');if(btn.getAttribute('data-tab')==='atlas'){atlasOpen();}if(btn.getAttribute('data-tab')==='plano'){try{if(planoGetCal())planoShow('avaliacao');}catch(e){}}if(btn.getAttribute('data-tab')==='stories'){stInit();}if(btn.getAttribute('data-tab')==='educacao'){var _ef=document.getElementById('eduFrame');if(_ef&&!_ef.src)_ef.src='estudo.html';}if(btn.getAttribute('data-tab')==='explorar'){expInit();}if(btn.getAttribute('data-tab')==='criar'){criarInit();}}
 function getTema(){return document.getElementById('temaCentral').value.trim();}
 function setTema(el){document.getElementById('temaCentral').value=el.textContent;try{localStorage.setItem('curador_tema',el.textContent);}catch(e){}}
 document.getElementById('temaCentral').addEventListener('input',function(){try{localStorage.setItem('curador_tema',this.value);}catch(e){}});
@@ -493,6 +514,8 @@ function edBlock(txt){
      +'<span style="flex:1"></span>'
      +B('edCopy(this)','Copiar tudo')
      +B('edDownload(this)','Baixar .md')
+     +B('edPdf(this)','🧾 Gerar PDF')
+     +B('edArmazenar(this)','💾 Armazenar')
    +'</div>'
    +'<div class="mdout eddoc" contenteditable="false" onkeyup="edRemember(this)" onmouseup="edRemember(this)" style="transition:background .15s">'+md(txt)+'</div>'
    +'</div>';
@@ -1096,6 +1119,194 @@ function gerarExplorar(){
   var prompt='Você é um ESTRATEGISTA SÊNIOR de ALCANCE e DESCOBERTA no EXPLORAR do Instagram. O algoritmo está privilegiando a distribuição para NÃO SEGUIDORES: o conteúdo precisa parar quem nunca viu o Dr. Tenner, gerar SALVAMENTOS e COMPARTILHAMENTOS, ter alta retenção e ser indexável na busca (SEO do Instagram: legenda, texto na tela e alt text).'+NL+NL+'TEMA: "'+t+'"'+NL+'FORMATO: '+f+NL+'OBJETIVO PRINCIPAL: maximizar '+o+'.'+NL+NL+'Crie um PACOTE DE ALCANCE em Markdown, específico a ESTE tema, começando pela FISIOLOGIA (nunca por frase negativa), com estas seções:'+NL+'## Ângulo de descoberta'+NL+'Por que um NÃO seguidor pararia — entrada universal/relatable que puxa pra fisiologia. Nada que dependa de já te conhecer.'+NL+'## 3 ganchos de não-seguidor (0–3s)'+NL+'Frases de abertura testáveis, para quem nunca te viu.'+NL+'## Estrutura de retenção'+NL+(isReel?'Cena a cena com tempos, padrão de retenção e um loop/recompensa no fim que aumenta o replay.':'Card a card: promessa no card 1 e recompensa (framework/checklist) que faz salvar.')+NL+'## Texto na tela (SEO)'+NL+'Palavras-chave que as pessoas realmente BUSCAM sobre o tema, escritas na tela para indexação.'+NL+'## Legenda otimizada para busca'+NL+'Primeira linha rica em palavra-chave (SEO), corpo curto e escaneável, nota de individualização/avaliação médica e assinatura correta.'+NL+'## CTA de SALVAR e COMPARTILHAR'+NL+'CTAs específicos que geram save e send para DM (não só comentário).'+NL+'## Elemento salvável + frase compartilhável'+NL+'Um mini-framework/checklist para salvar e UMA frase-verdade curta para compartilhar.'+NL+'## Hashtags de descoberta'+NL+'8–12, misturando nicho + amplo + termos de busca.'+NL+'## Alt text (busca)'+NL+'Texto alternativo descritivo com palavras-chave.'+(isReel?(NL+'## Áudio/tendência'+NL+'Tipo de áudio recomendado (fala original vs. trending) para maximizar distribuição.'):'')+NL+NL+'Compliance CFM obrigatório: nunca a palavra "especialista" para o Dr. Tenner; medicamento pela molécula (nunca marca); nunca "soroterapia"; individualização + avaliação médica; sem promessa/quilos/prazo; registro educativo; assinatura correta (Médico — pós-graduando em Endocrinologia e Metabologia, CRM/RR 2920).'+briefDirectives();
   run('outExp','btnExp',prompt,4300);
 }
+
+/* ===== Criar Calendário (mês a mês, 40/25/20/15, memória + assuntos quentes) ===== */
+var CC_MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+var CC_GANCHOS=['Quebra de mito','Pergunta direta','Especificidade etária/temporal','Tensão/verdade incômoda','Erro comum'];
+var CC_DISC='Conteúdo educativo; tratamento depende de avaliação médica individual. CRM/RR 2920.';
+var CC_MCLIN='@drtennernunes (clínico/pessoal)';var CC_MINST='@instituto.vitality (institucional)';
+var CC_RX=/(GLP-1|GIP|tirzepatida|semaglutida|liraglutida|análog|reposição hormonal|reposição|testosterona|terapia hormonal|medicament|tratament)/i;
+var CC_BRANDS=/\b(Ozempic|Wegovy|Mounjaro|Saxenda|Victoza|Zepbound|Rybelsus|Trulicity|Poviztra|Extensior)\b/gi;
+function ccStripBrand(x){return (x||'').replace(CC_BRANDS,'análogo de GLP-1/GIP');}
+// bancos-fallback compactos (usados quando a pesquisa está desligada ou falha)
+var CC_FB={
+ educar:[
+  ['Emagrecer não é sobre comer menos — é o corpo voltar a queimar o que come','Por que o peso volta depois da dieta?','3 coisas que parecem saudáveis e podem sabotar seu emagrecimento','Resistência à insulina explicada em 60 segundos','Seu metabolismo muda 10 anos antes de você notar na balança','Perder peso rápido x perder gordura não é a mesma coisa','O papel do sono no emagrecimento','Músculo é órgão metabólico — e mexe no seu peso'],
+  ['Menopausa e ganho de peso: por que o metabolismo muda após os 40','Quando o cansaço é hormonal (tireoide, cortisol)','Reposição hormonal: os mitos que ainda assustam','Testosterona baixa no homem: sintomas despercebidos','Cortisol alto não é só estresse — é fisiologia','Perimenopausa: o que acontece antes da última menstruação','Por que você acorda cansado dormindo 8 horas','3 sinais de que seus hormônios pedem avaliação'],
+  ['Massa muscular é o órgão da longevidade','VO2máx: o marcador que quase ninguém mede','Sarcopenia começa antes do que você imagina','Energia não é sobre café — é sobre mitocôndria','Treino de força depois dos 40','Sono profundo x horas de sono: o que recupera','Glicemia estável e disposição','Proteína na idade certa: por que a necessidade muda']
+ ],
+ autoridade:[
+  ['Como leio um exame de resistência à insulina na prática','Tirzepatida x semaglutida: o que a evidência mostra','Uso racional de análogos de GLP-1: quando faz sentido','Por que "emagrecedor natural" raramente resiste à evidência','Composição corporal acima do peso: o que acompanho','Reganho após suspender o tratamento: o que a ciência explica'],
+  ['Como interpreto um painel hormonal (visão geral)','Reposição hormonal: o que os grandes estudos concluíram','Menopausa e risco cardiometabólico','Testosterona: quando investigar e o que evitar','Tireoide: quando o número não conta a história toda','Terapia hormonal individualizada: sem protocolo único'],
+  ['Os marcadores de longevidade além do peso','Força e massa muscular: o que a literatura associa à sobrevida','VO2máx na prática: por que priorizo','Sono como pilar clínico','Suplementos da moda: evidência x hype','Por que priorizo função e não só exames isolados']
+ ]
+};
+var CC_CONEX=[['Por que escolhi a medicina do estilo de vida',0],['O que aprendi atendendo quem já tentou de tudo',0],['Como penso um caso: bastidor de raciocínio (sem expor paciente)',0],['Por que não prometo resultado — e por que isso é a favor do paciente',0],['Minha rotina de atualização científica',0],['Por que sobriedade importa mais que viralização',0],['O que "individualização" significa na minha prática',0],['Bastidor: como preparo uma consulta de avaliação',0],['Meu critério para dizer "esse tratamento não é para você"',0],['Por que evito modismos mesmo quando dão audiência',0],['Como o Instituto Vitality nasceu (valores)',1],['Por que atendo pensando em anos, não em semanas',0]];
+var CC_DIREC=[['Para quem é a avaliação metabólica (e para quem não é)',0],['Como funciona a primeira consulta, passo a passo',1],['O que levar para a sua avaliação',1],['Quando faz sentido procurar acompanhamento hormonal',0],['O que esperar (e o que não esperar) do acompanhamento',0],['Avaliação de longevidade: para quem quer prevenir, não remediar',0],['O primeiro passo para ser avaliado',1],['Sinais de que é hora de uma avaliação metabólica séria',0],['Perguntas frequentes antes de agendar',1],['Como o Instituto Vitality conduz sua jornada de cuidado',1]];
+var CC_CTA={Educar:'Salvar e compartilhar com quem precisa',Autoridade:'Salvar para referência','Conexão':'Comentar uma palavra / seguir',Direcionar:'Me chame para avaliar o seu caso'};
+var CC_FUNIL={Educar:'Topo · Descoberta (ser encontrado)',Autoridade:'Meio · Confiança (ser respeitado)','Conexão':'Fundo · Desejo (ser desejado como médico)',Direcionar:'Conversão (ser agendado)'};
+var CC_PCT={Educar:'40%',Autoridade:'25%','Conexão':'20%',Direcionar:'15%'};
+
+function ccFirstMonday(y,m){var d=new Date(Date.UTC(y,m,1));while(d.getUTCDay()!==1){d.setUTCDate(d.getUTCDate()+1);}return d;}
+function ccFmt(d){return d.toISOString().slice(0,10);}
+function ccBrief(pilar,tema,ang,formato,terr,rx){var p=[];p.push('"'+ccStripBrand(tema)+'"');if(ang)p.push('Ângulo: '+ang);if(terr)p.push('Território: '+terr);p.push('Formato: '+formato);p.push('CTA único: '+CC_CTA[pilar]);if(rx)p.push(CC_DISC);p.push('Rascunho para revisão humana antes de publicar.');return p.join(' · ');}
+function ccPeca(dia,dt,tema,pilar,formato,terr,gancho,ang,inst){tema=ccStripBrand(tema);var rx=CC_RX.test(tema+' '+(ang||''));var marca=(pilar==='Direcionar'||inst)?CC_MINST:CC_MCLIN;var risco=rx?'Médio — revisar disclaimer + CRM':(pilar==='Direcionar'?'Baixo — evitar venda dura/escassez falsa':'Baixo');return {dia:dia,data:ccFmt(dt),tema:tema,pilar:pilar,intencao:pilar+' ('+CC_PCT[pilar]+')',risco:risco,serie:terr||'Marca',territorio:terr||'Marca/consultório',formato:formato,gancho:gancho,funil:CC_FUNIL[pilar],marca:marca,conteudo:ccBrief(pilar,tema,ang,formato,terr,rx)};}
+
+function ccPick(arr,i){return arr[i%arr.length];}
+function ccComposeMonth(nomeMes,y,m,terrs,banks){
+  var EDU=banks.educar,AUT=banks.autoridade; // arrays[3][...]
+  var eduSplit=[0,0,0,1,1,1,2,2],autSplit=[0,0,1,1,2];
+  var ce=[0,0,0],ca=[0,0,0],cc=0,cd=0; // cursors
+  var pecas=[],eduIdx=0,autIdx=0,conexIdx=0;var fm=ccFirstMonday(y,m);
+  function addEdu(dt,dia){var ti=eduSplit[eduIdx];var tema=ccPick(EDU[ti],ce[ti]++);var g=CC_GANCHOS[eduIdx%CC_GANCHOS.length];var fmt=(eduIdx===3||eduIdx===7)?'Carrossel':'Reel';eduIdx++;pecas.push(ccPeca(dia,dt,tema,'Educar',fmt,terrs[ti],g,'Fisiologia primeiro; uma ideia; sem promessa.'));}
+  function addAut(dt,dia){var ti=autSplit[autIdx];var tema=ccPick(AUT[ti],ca[ti]++);var fmt=(autIdx===4)?'Reel':'Carrossel';autIdx++;pecas.push(ccPeca(dia,dt,tema,'Autoridade',fmt,terrs[ti],'Raciocínio clínico + fonte','Como você pensa, não só o que sabe; referência a fonte.'));}
+  function addConex(dt,dia){var it=ccPick(CC_CONEX,cc++);var fmt=(conexIdx===3)?'Feed':'Reel';conexIdx++;pecas.push(ccPeca(dia,dt,it[0],'Conexão',fmt,it[1]?'Institucional':'',it[1]?'Valores institucionais':'Conexão/bastidor',it[1]?'Bastidor/valores institucionais.':'Bastidor curado, valores, por que faço.',it[1]));}
+  function addDirec(dt,dia){var it=ccPick(CC_DIREC,cd++);pecas.push(ccPeca(dia,dt,it[0],'Direcionar','Feed','','Convite sutil','Como funciona / para quem é; convite sutil, sem venda dura.',it[1]));}
+  for(var w=0;w<4;w++){var b=new Date(fm.getTime());b.setUTCDate(fm.getUTCDate()+7*w);
+    var seg=new Date(b.getTime());var ter=new Date(b.getTime());ter.setUTCDate(b.getUTCDate()+1);var qua=new Date(b.getTime());qua.setUTCDate(b.getUTCDate()+2);var qui=new Date(b.getTime());qui.setUTCDate(b.getUTCDate()+3);var sex=new Date(b.getTime());sex.setUTCDate(b.getUTCDate()+4);var sab=new Date(b.getTime());sab.setUTCDate(b.getUTCDate()+5);
+    addEdu(seg,'Seg');addAut(ter,'Ter');addEdu(qua,'Qua');addConex(qui,'Qui');if(w<3){addDirec(sab,'Sáb');}else{addAut(sex,'Sex');}}
+  var foco='Território-líder: '+terrs[0]+' · Mix de intenções 40/25/20/15 (8 Educar · 5 Autoridade · 4 Conexão · 3 Direcionar) · Cadência: Reels (alcance), Carrossel (autoridade/salvamento), Feed (conversão/humanização); Stories diários na aba própria.';
+  return {mes:nomeMes,foco:foco,pecas:pecas};
+}
+
+async function criarInit(){
+  var sel=document.getElementById('criarMes');if(!sel||sel.dataset.loaded)return;
+  if(!STPLAN){try{var r=await fetch(STORE,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'get',key:'plano50k'})});var d=await r.json();var p=(d&&d.plano)||d;if(p&&p.meses)STPLAN=p;}catch(e){}}
+  // prefill próximo mês após o último salvo
+  var mi=(new Date()).getMonth(),yy=(new Date()).getFullYear();
+  try{if(STPLAN&&STPLAN.meses&&STPLAN.meses.length){var last=STPLAN.meses[STPLAN.meses.length-1].mes||'';var parts=last.split('/');var idx=CC_MESES.indexOf((parts[0]||'').trim());var ly=parseInt((parts[1]||yy),10)||yy;if(idx>=0){idx+=1;if(idx>11){idx=0;ly+=1;}mi=idx;yy=ly;}}}catch(e){}
+  sel.value=CC_MESES[mi];document.getElementById('criarAno').value=yy;sel.dataset.loaded='1';
+}
+
+async function ccResearch(terrs){
+  var NL='\n';
+  var prompt='Aja como CURADOR + pesquisador de tendências. Liste os ASSUNTOS MAIS QUENTES do momento (2026) para o Instagram do Dr. Tenner, dentro de CADA território, combinando tendências atuais do nicho com a memória da marca.'+NL
+    +'Território 1: '+terrs[0]+NL+'Território 2: '+terrs[1]+NL+'Território 3: '+terrs[2]+NL
+    +'Para CADA território dê 8 temas de EDUCAR (quebra de mito / erro comum / fisiologia / pergunta) e 6 de AUTORIDADE (raciocínio clínico / leitura de exame / posicionamento sobre modismos).'+NL
+    +'Compliance CFM: medicamento SEMPRE pela molécula (tirzepatida, semaglutida, análogos GLP-1/GIP), NUNCA marca; nunca a palavra "especialista"; sem promessa/quilos/prazo; individualização + avaliação médica.'+NL
+    +'Cada tema deve ser uma frase curta e original (sem clichês). Responda APENAS JSON válido, sem texto fora do JSON, no formato exato: {"t1":{"educar":["..."],"autoridade":["..."]},"t2":{"educar":[...],"autoridade":[...]},"t3":{"educar":[...],"autoridade":[...]}}';
+  var txt=await ask(prompt,2800);
+  var mm=txt&&txt.match(/\{[\s\S]*\}/);if(!mm)return null;var obj;try{obj=JSON.parse(mm[0]);}catch(e){return null;}
+  function arr(x){return (x&&x.length)?x.map(ccStripBrand):null;}
+  var edu=[arr(obj.t1&&obj.t1.educar),arr(obj.t2&&obj.t2.educar),arr(obj.t3&&obj.t3.educar)];
+  var aut=[arr(obj.t1&&obj.t1.autoridade),arr(obj.t2&&obj.t2.autoridade),arr(obj.t3&&obj.t3.autoridade)];
+  for(var i=0;i<3;i++){if(!edu[i]||edu[i].length<8)return null;if(!aut[i]||aut[i].length<6)return null;}
+  return {educar:edu,autoridade:aut};
+}
+async function ccPubmed(terrs){
+  try{var y=new Date().getFullYear();var term=terrs.join(' OR ')+' ('+(y-3)+'[dp] : '+y+'[dp])';
+    var q=await ask('Converta estes territórios em UMA query PubMed em inglês (termos MeSH, OR): '+terrs.join('; ')+'. Responda só a query.',140);
+    if(q){q=q.replace(/["`]/g,'').trim().split('\n')[0];if(q)term=q+' AND ('+(y-3)+'[dp] : '+y+'[dp])';}
+    var d=await callBackend({action:'pubmed',term:term,retmax:5});return (d&&d.items)?d.items:[];
+  }catch(e){return [];}
+}
+
+function ccBadge(t,c){return '<span style="display:inline-block;background:#132a4a;border:1px solid #24406b;border-radius:20px;padding:3px 10px;margin:2px 4px 2px 0;font-size:12px">'+t+': <b>'+c+'</b></span>';}
+function ccRenderResumo(mes){
+  var c={Educar:0,Autoridade:0,'Conexão':0,Direcionar:0},f={};
+  mes.pecas.forEach(function(p){c[p.pilar]++;f[p.formato]=(f[p.formato]||0)+1;});
+  var h='<div class="handoff"><b>'+esc(mes.mes)+'</b> — '+mes.pecas.length+' peças · intenções: '+ccBadge('Educar',c.Educar+' (40%)')+ccBadge('Autoridade',c.Autoridade+' (25%)')+ccBadge('Conexão',c['Conexão']+' (20%)')+ccBadge('Direcionar',c.Direcionar+' (15%)')+'<br><span class="tk">Formatos:</span> ';
+  Object.keys(f).forEach(function(k){h+=ccBadge(k,f[k]);});
+  h+='</div>';return h;
+}
+function ccRenderTable(mes){
+  var h='<div class="edittools" style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0"><button class="go" id="btnSalvarMes" onclick="salvarMesCriado()">💾 Salvar mês no Plano 50k</button><button class="go alt" onclick="ccCopyMd()">Copiar (.md)</button><button class="go alt" onclick="ccDownMd()">Baixar .md</button><button class="go alt" onclick="ccPdfMes()">🧾 Gerar PDF</button></div>';
+  h+='<div style="overflow:auto"><table id="ccTable" style="width:100%;border-collapse:collapse;font-size:12.5px">';
+  h+='<tr style="text-align:left;color:#9db4d8"><th style="padding:6px">Dia/Data</th><th>Pilar</th><th>Formato</th><th>Território</th><th>Gancho</th><th>Tema (editável)</th><th>Brief (editável)</th></tr>';
+  mes.pecas.forEach(function(p,i){
+    var pc={Educar:'#2b5aa0',Autoridade:'#c8a24a','Conexão':'#3a7d5a',Direcionar:'#a0522d'}[p.pilar]||'#2b5aa0';
+    h+='<tr data-i="'+i+'" style="border-top:1px solid #1b2f4d;vertical-align:top">'
+      +'<td style="padding:6px;white-space:nowrap">'+esc(p.dia)+'<br><span class="tk">'+esc(p.data)+'</span></td>'
+      +'<td style="padding:6px"><span style="color:'+pc+';font-weight:600">'+esc(p.pilar)+'</span></td>'
+      +'<td style="padding:6px">'+esc(p.formato)+'</td>'
+      +'<td style="padding:6px">'+esc(p.territorio)+'</td>'
+      +'<td style="padding:6px">'+esc(p.gancho)+'</td>'
+      +'<td style="padding:6px;min-width:180px" contenteditable="true" data-k="tema">'+esc(p.tema)+'</td>'
+      +'<td style="padding:6px;min-width:260px" contenteditable="true" data-k="conteudo">'+esc(p.conteudo)+'</td>'
+      +'</tr>';
+  });
+  h+='</table></div>';return h;
+}
+function ccCollect(){if(!window.CC_MES)return null;document.querySelectorAll('#ccTable tr[data-i]').forEach(function(tr){var i=+tr.getAttribute('data-i');tr.querySelectorAll('[data-k]').forEach(function(td){window.CC_MES.pecas[i][td.getAttribute('data-k')]=td.innerText.trim();});});return window.CC_MES;}
+function ccToMd(){var m=ccCollect()||window.CC_MES;if(!m)return '';var s='# '+m.mes+'\n\n'+m.foco+'\n\n';m.pecas.forEach(function(p){s+='## '+p.dia+' '+p.data+' — '+p.pilar+' · '+p.formato+'\n**Tema:** '+p.tema+'\n\n'+p.conteudo+'\n\n';});return s;}
+function ccCopyMd(){var t=ccToMd();navigator.clipboard&&navigator.clipboard.writeText(t);var b=event.target;var o=b.textContent;b.textContent='Copiado!';setTimeout(function(){b.textContent=o;},1200);}
+function ccDownMd(){var t=ccToMd();var bl=new Blob([t],{type:'text/markdown'});var a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download=(window.CC_MES?window.CC_MES.mes.replace('/','-'):'calendario')+'.md';a.click();}
+
+async function gerarCalendarioMes(){
+  var out=document.getElementById('outCriar'),res=document.getElementById('criarResumo'),btn=document.getElementById('btnCriar');
+  var mesNome=document.getElementById('criarMes').value,ano=parseInt(document.getElementById('criarAno').value,10)||new Date().getFullYear();
+  var m=CC_MESES.indexOf(mesNome);if(m<0)m=0;
+  var terrs=[document.getElementById('criarT1').value.trim()||'Emagrecimento metabólico',document.getElementById('criarT2').value.trim()||'Saúde hormonal',document.getElementById('criarT3').value.trim()||'Longevidade e energia'];
+  var pesq=document.getElementById('criarPesq').checked;
+  btn.disabled=true;res.innerHTML='';
+  var banks=CC_FB,eviCard='';
+  if(pesq){
+    if(!API.ready){out.innerHTML='<div class="needconn">O servidor ainda não tem a chave configurada (para pesquisar assuntos quentes). Configure os secrets no Supabase ou desmarque a pesquisa para gerar com o banco padrão.</div>';btn.disabled=false;return;}
+    out.innerHTML='<div class="loading"><span class="spin"></span>1/3 · Pesquisando os assuntos mais quentes do momento...</div>';
+    var fresh=null;try{fresh=await ccResearch(terrs);}catch(e){}
+    if(fresh)banks=fresh;
+    out.innerHTML='<div class="loading"><span class="spin"></span>2/3 · Buscando as últimas atualizações no PubMed...</div>';
+    var evi=await ccPubmed(terrs);
+    if(evi&&evi.length){eviCard='<div class="handoff" style="margin-bottom:10px">🔎 <b>Atualizações consideradas (PubMed):</b><br>'+evi.map(function(it){return '• <a href="'+it.url+'" target="_blank" rel="noopener">'+esc(it.title)+'</a> <span class="tk">'+esc((it.journal||'')+' · '+(it.year||''))+'</span>';}).join('<br>')+'</div>';}
+    else{eviCard='<div class="handoff" style="margin-bottom:10px">🔎 Sem artigos recentes no PubMed para estes termos — segui com tendências do modelo'+(fresh?'':' e banco padrão')+'.</div>';}
+    if(!fresh)eviCard+='<div class="handoff" style="margin-bottom:10px">⚠️ A pesquisa de temas não retornou JSON válido; usei o banco padrão do Manual (você pode gerar de novo).</div>';
+    out.innerHTML='<div class="loading"><span class="spin"></span>3/3 · Montando o calendário em 40/25/20/15...</div>';
+  } else { out.innerHTML='<div class="loading"><span class="spin"></span>Montando o calendário em 40/25/20/15...</div>'; }
+  try{
+    var mes=ccComposeMonth(mesNome+'/'+ano,ano,m,terrs,banks);
+    window.CC_MES=mes;
+    res.innerHTML=ccRenderResumo(mes);
+    out.innerHTML=eviCard+ccRenderTable(mes);
+  }catch(err){out.innerHTML='<div class="errbox"><b>Erro:</b> '+esc(err.message)+'</div>';}
+  finally{btn.disabled=false;}
+}
+
+async function salvarMesCriado(){
+  var m=ccCollect();if(!m){alert('Gere um mês primeiro.');return;}
+  var b=document.getElementById('btnSalvarMes');if(b){b.disabled=true;b.textContent='Salvando...';}
+  try{
+    var r=await fetch(STORE,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'get',key:'plano50k'})});
+    var d=await r.json();var p=(d&&d.plano)||d;if(!p||!p.meses){p={meta:'Plano 50k',meses:[]};}
+    var idx=-1;for(var i=0;i<p.meses.length;i++){if((p.meses[i].mes||'')===m.mes){idx=i;break;}}
+    if(idx>=0)p.meses[idx]=m;else p.meses.push(m);
+    p.gerado_em=new Date().toISOString().slice(0,10);
+    var sv=await fetch(STORE,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'save',key:'plano50k',data:p})});
+    var j=await sv.json();
+    STPLAN=p;var st=document.getElementById('criarMes');if(st)st.dataset.loaded='';criarInit();
+    if(b){b.textContent=(j&&j.ok)?('✓ Salvo ('+(idx>=0?'atualizado':'adicionado')+')'):'Erro ao salvar';b.disabled=false;}
+  }catch(e){if(b){b.textContent='Erro: '+e.message;b.disabled=false;}}
+}
+
+/* ===== Gerar PDF + Armazenar (todas as abas via edBlock) ===== */
+function ccMakePdf(el,title){
+  if(typeof html2pdf==='undefined'){alert('O gerador de PDF ainda está carregando — tente de novo em 1 segundo.');return;}
+  var t=(title||'Central do Curador');
+  var wrap=document.createElement('div');
+  wrap.style.cssText='padding:8px 6px;font-family:Georgia,\'Times New Roman\',serif;color:#111;background:#fff';
+  wrap.innerHTML='<div style="border-bottom:2px solid #C8A24A;padding-bottom:8px;margin-bottom:14px">'
+    +'<div style="font-size:18px;font-weight:700;color:#0D1F3F">'+esc(t)+'</div>'
+    +'<div style="font-size:10.5px;color:#555">Central do Curador · Dr. Tenner Nunes — Médico, pós-graduando em Endocrinologia e Metabologia · CRM/RR 2920 · rascunho para revisão humana</div></div>'
+    +'<div style="font-size:12.5px;line-height:1.55">'+el.innerHTML+'</div>';
+  var fn=(t.replace(/[^\w\- À-ÿ]/g,'').trim().slice(0,48)||'curador')+'.pdf';
+  var opt={margin:[14,12,16,12],filename:fn,image:{type:'jpeg',quality:0.98},html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff'},jsPDF:{unit:'pt',format:'a4',orientation:'portrait'},pagebreak:{mode:['css','legacy']}};
+  html2pdf().set(opt).from(wrap).save();
+}
+function edPdf(btn){var doc=btn.closest('.editwrap').querySelector('.eddoc');ccMakePdf(doc, (typeof getTema==='function'&&getTema())?getTema():'Central do Curador');}
+async function edArmazenar(btn){
+  var doc=btn.closest('.editwrap').querySelector('.eddoc'),t=doc.innerText;
+  var abaEl=document.querySelector('.tabbar button.active');var aba=abaEl?abaEl.textContent.trim():'';
+  var o=btn.textContent;btn.textContent='Armazenando...';btn.disabled=true;
+  var item={aba:aba,tema:(typeof getTema==='function'?getTema():''),data:new Date().toISOString(),texto:t};
+  try{
+    var g=await fetch(STORE,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'get',key:'curador_armazenados'})});
+    var d=await g.json();var arr=(d&&d.plano);if(!Array.isArray(arr))arr=[];
+    arr.unshift(item);if(arr.length>300)arr=arr.slice(0,300);
+    var sv=await fetch(STORE,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'save',key:'curador_armazenados',data:arr})});
+    var j=await sv.json();btn.textContent=(j&&j.ok)?('Armazenado ✓ ('+arr.length+')'):'Erro ao armazenar';
+  }catch(e){btn.textContent='Erro: '+e.message;}
+  setTimeout(function(){btn.textContent=o;btn.disabled=false;},1800);
+}
+function ccPdfMes(){var m=(typeof ccCollect==='function'?ccCollect():null)||window.CC_MES;if(!m){alert('Gere um mês primeiro.');return;}var el=document.createElement('div');var tbl=document.getElementById('ccTable');el.innerHTML=(document.getElementById('criarResumo')?document.getElementById('criarResumo').innerHTML:'')+(tbl?tbl.outerHTML:'');ccMakePdf(el, m.mes);}
 
 /* ===== init: restaura tema/provedor, carrega modelos do backend ===== */
 (function(){
