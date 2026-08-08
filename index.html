@@ -186,6 +186,7 @@
   <button data-tab="atlas" onclick="switchTab(this)">🧭 ATLAS</button>
   <button data-tab="plano" onclick="switchTab(this)">📋 Plano do Mês</button>
   <button data-tab="criar" onclick="switchTab(this)">🗓️ Criar Calendário</button>
+  <button data-tab="manus" onclick="switchTab(this)">🤖 Manus</button>
   <button class="active" data-tab="avaliador" onclick="switchTab(this)">⚖ Avaliar Tema</button>
   <button data-tab="gerador" onclick="switchTab(this)">🎬 Roteiros</button>
   <button data-tab="stories" onclick="switchTab(this)">📲 Stories da Semana</button>
@@ -195,55 +196,9 @@
   <button data-tab="legendas" onclick="switchTab(this)">✍️ Legendas & Hashtags</button>
   <button data-tab="evidencias" onclick="switchTab(this)">🔬 Evidências (PubMed)</button>
   <button data-tab="referencia" onclick="switchTab(this)">🔎 Analisar Referência</button>
-  <button data-tab="manus" onclick="switchTab(this)">🧠 Pesquisa Profunda</button>
 </nav>
 
 <div class="wrap">
-
-<section class="tabpane" id="tab-manus"><div class="tool">
-  <div class="tk">Manus · agente autônomo · pesquisa profunda na web</div><h3>🧠 Pesquisa / Estratégia Profunda</h3>
-  <p class="sub">Descreva a tarefa. O <b>Manus</b> planeja, pesquisa na web, usa ferramentas e devolve o resultado completo (leva alguns minutos). Ideal para calendário editorial, estratégia de conteúdo, benchmark de concorrentes ou revisão ampla de um tema — sempre dentro do compliance do CFM.</p>
-  <textarea id="manusPrompt" rows="4" placeholder="Ex.: Monte um calendário editorial de 4 semanas sobre emagrecimento e reposição hormonal para o Instagram do Instituto Vitality, com temas, ganchos e 3 sugestões de post por semana."></textarea>
-  <div class="selrow" style="margin-top:10px">
-    <button class="go" id="manusBtn" onclick="manusRun()">▶ Pesquisar com Manus</button>
-    <span id="manusStatus" style="font-size:13px;color:#e2d8c4"></span>
-  </div>
-  <div class="handoff">O Manus é um agente autônomo: ele decompõe a tarefa, navega, coleta fontes e sintetiza. Use para trabalho de fôlego; para textos rápidos, use as outras abas.</div>
-  <div class="outwrap" id="manusOut" style="display:none"><div class="mdout" id="manusMd" style="white-space:pre-wrap"></div></div>
-</div></section>
-<script>
-(function(){
-  var polling=null;
-  function mfn(action,payload){
-    return fetch(BACKEND,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(Object.assign({action:action},payload))}).then(function(r){return r.json();});
-  }
-  window.manusRun=function(){
-    var el=document.getElementById('manusPrompt'); var p=((el&&el.value)||'').trim();
-    var st=document.getElementById('manusStatus'); var wrap=document.getElementById('manusOut'); var md=document.getElementById('manusMd'); var btn=document.getElementById('manusBtn');
-    function setS(t){ if(st) st.textContent=t; }
-    function show(t){ if(wrap&&md){ wrap.style.display='block'; md.textContent=t; } }
-    if(!p){ setS('Escreva a tarefa primeiro.'); return; }
-    if(polling){ clearInterval(polling); polling=null; }
-    btn.disabled=true; setS('Criando tarefa no Manus…'); show('');
-    mfn('manus',{prompt:p}).then(function(c){
-      if(!c||c.error||!c.task_id){ setS('Erro: '+((c&&c.error)||'sem task_id')); btn.disabled=false; return; }
-      var taskId=c.task_id; setS('Manus trabalhando… (leva alguns minutos)');
-      var n=0, MAX=180;
-      polling=setInterval(function(){
-        n++;
-        mfn('manus_poll',{task_id:taskId}).then(function(res){
-          if(res&&res.texto) show(res.texto);
-          if(res&&res.status==='stopped'){ clearInterval(polling); polling=null; setS('✅ Concluído.'); btn.disabled=false; }
-          else if(res&&res.status==='error'){ clearInterval(polling); polling=null; setS('⚠ O Manus retornou erro.'); btn.disabled=false; }
-          else if(res&&res.status==='waiting'){ setS('⏸ O Manus aguarda uma confirmação — veja no painel do Manus.'); }
-          else { setS('Manus trabalhando… ('+n+')'); }
-        }).catch(function(){});
-        if(n>=MAX){ clearInterval(polling); polling=null; setS('Ainda processando — tente novamente em instantes ou abra o painel do Manus.'); btn.disabled=false; }
-      },5000);
-    }).catch(function(e){ setS('Erro: '+((e&&e.message)||e)); btn.disabled=false; });
-  };
-})();
-</script>
 
 <section class="tabpane active" id="tab-avaliador"><div class="tool">
   <div class="tk">IA · pesquisa evidências recentes · usa o tema central</div><h3>⚖ Avaliar Tema</h3>
@@ -356,6 +311,23 @@
   <div class="handoff">Rascunho editável seguindo o compliance CFM (sem "especialista", molécula não marca, individualização, disclaimer educativo). Cada tela traz objetivo, texto na tela, figurinha e fala.</div>
   <div id="stSemInfo" style="margin-top:10px"></div>
   <div class="outwrap" id="outStories"></div>
+</div></section>
+
+<section class="tabpane" id="tab-manus"><div class="tool">
+  <div class="tk">Agente autônomo · tarefas em várias etapas · assíncrono</div><h3>🤖 Manus (Agente IA)</h3>
+  <p class="sub">O <b>Manus</b> é um agente autônomo: diferente das outras abas (resposta imediata), ele <b>executa tarefas em várias etapas</b> — pesquisa na web, cria arquivos, monta planos — e pode levar de segundos a alguns minutos. Ideal para pesquisas amplas, planejamento e produções que exigem várias fontes. As diretrizes de conformidade do Curador são enviadas automaticamente junto com a sua tarefa.</p>
+  <div id="manusKeyStatus" class="handoff">Verificando a chave Manus…</div>
+  <div class="selrow" style="margin-top:8px">
+    <select id="manusProfile">
+      <option value="manus-1.6-lite">⚡ Rápido / econômico (1.6-lite)</option>
+      <option value="manus-1.6" selected>⚖ Equilibrado (1.6)</option>
+      <option value="manus-1.6-max">🧠 Máxima capacidade (1.6-max)</option>
+    </select>
+  </div>
+  <textarea id="manusPrompt" rows="5" placeholder="Descreva a tarefa para o Manus. Ex.: Pesquise as 5 tendências mais recentes sobre tirzepatida e emagrecimento metabólico e monte um resumo com fontes para embasar meus próximos posts." style="width:100%;margin-top:8px;padding:10px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:14px;box-sizing:border-box"></textarea>
+  <div style="margin-top:8px"><button class="go" id="btnManus" onclick="manusCriar()">🤖 Criar tarefa no Manus</button> <button class="go alt" id="btnManusStop" onclick="manusStop();this.blur()" style="display:none">⏹ Parar de acompanhar</button></div>
+  <div class="handoff" style="margin-top:8px">Compliance CFM enviado automaticamente (sem “especialista”, medicamento por molécula, individualização, disclaimer, rascunho para revisão). Resultado editável, com Gerar PDF e Armazenar.</div>
+  <div class="outwrap" id="outManus"></div>
 </div></section>
 
 <section class="tabpane" id="tab-explorar"><div class="tool">
@@ -474,7 +446,7 @@ var LP=[['https://aistudio.google.com/','Google AI'],['https://opal.withgoogle.c
 document.getElementById('launchpad').innerHTML='<span class="lplab">Ferramentas de IA:</span>'+LP.map(function(l){return '<a href="'+l[0]+'" target="_blank" rel="noopener">'+l[1]+'</a>';}).join('');
 
 /* ===== tabs / tema / dicas ===== */
-function switchTab(btn){document.querySelectorAll('.tabbar button').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');document.querySelectorAll('.tabpane').forEach(function(p){p.classList.remove('active');});document.getElementById('tab-'+btn.getAttribute('data-tab')).classList.add('active');if(btn.getAttribute('data-tab')==='atlas'){atlasOpen();}if(btn.getAttribute('data-tab')==='plano'){try{if(planoGetCal())planoShow('avaliacao');}catch(e){}}if(btn.getAttribute('data-tab')==='stories'){stInit();}if(btn.getAttribute('data-tab')==='educacao'){var _ef=document.getElementById('eduFrame');if(_ef&&!_ef.src)_ef.src='estudo.html';}if(btn.getAttribute('data-tab')==='explorar'){expInit();}if(btn.getAttribute('data-tab')==='criar'){criarInit();}}
+function switchTab(btn){document.querySelectorAll('.tabbar button').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');document.querySelectorAll('.tabpane').forEach(function(p){p.classList.remove('active');});document.getElementById('tab-'+btn.getAttribute('data-tab')).classList.add('active');if(btn.getAttribute('data-tab')==='atlas'){atlasOpen();}if(btn.getAttribute('data-tab')==='plano'){try{if(planoGetCal())planoShow('avaliacao');}catch(e){}}if(btn.getAttribute('data-tab')==='stories'){stInit();}if(btn.getAttribute('data-tab')==='educacao'){var _ef=document.getElementById('eduFrame');if(_ef&&!_ef.src)_ef.src='estudo.html';}if(btn.getAttribute('data-tab')==='explorar'){expInit();}if(btn.getAttribute('data-tab')==='criar'){criarInit();}if(btn.getAttribute('data-tab')==='manus'){manusInit();}}
 function getTema(){return document.getElementById('temaCentral').value.trim();}
 function setTema(el){document.getElementById('temaCentral').value=el.textContent;try{localStorage.setItem('curador_tema',el.textContent);}catch(e){}}
 document.getElementById('temaCentral').addEventListener('input',function(){try{localStorage.setItem('curador_tema',this.value);}catch(e){}});
@@ -1353,6 +1325,97 @@ async function edArmazenar(btn){
   setTimeout(function(){btn.textContent=o;btn.disabled=false;},1800);
 }
 function ccPdfMes(){var m=(typeof ccCollect==='function'?ccCollect():null)||window.CC_MES;if(!m){alert('Gere um mês primeiro.');return;}var el=document.createElement('div');var tbl=document.getElementById('ccTable');el.innerHTML=(document.getElementById('criarResumo')?document.getElementById('criarResumo').innerHTML:'')+(tbl?tbl.outerHTML:'');ccMakePdf(el, m.mes);}
+
+/* ===== Manus (agente IA, assincrono) ===== */
+var MANUS='https://qqjebmisnlrlzglfuftf.supabase.co/functions/v1/curador-manus';
+var MANUS_TID=null, MANUS_POLL=null;
+async function manusCall(payload){var r=await fetch(MANUS,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});return await r.json();}
+function manusInit(){
+  var ta=document.getElementById('manusPrompt');
+  if(ta && !ta.value.trim()){var t=(typeof getTema==='function'?getTema():'');if(t)ta.value='Tema central: '+t+'\n\n';}
+  var st=document.getElementById('manusKeyStatus');
+  if(st && !st.dataset.checked){st.dataset.checked='1';manusPing();}
+}
+async function manusPing(){
+  var st=document.getElementById('manusKeyStatus');if(!st)return;
+  st.className='handoff';st.innerHTML='<span class="spin"></span> Verificando a chave Manus…';
+  try{var d=await manusCall({action:'ping'});
+    if(d&&d.ok){st.className='handoff';st.innerHTML='✅ Chave Manus ativa — pronto para criar tarefas.';}
+    else{st.className='needconn';st.innerHTML='⚠️ '+esc((d&&d.error)||'Chave Manus não configurada.')+'<br><span class="tk">Defina o secret <b>MANUS_API_KEY</b> no Supabase (ou <b>_config.manus_key</b>) e recarregue esta aba.</span> <button class="go alt" style="padding:4px 9px;font-size:11px" onclick="var s=document.getElementById(\'manusKeyStatus\');s.dataset.checked=\'\';manusPing()">Tentar de novo</button>';}
+  }catch(e){st.className='needconn';st.innerHTML='⚠️ Não consegui verificar a chave: '+esc(e.message);}
+}
+function manusStop(){if(MANUS_POLL){clearTimeout(MANUS_POLL);MANUS_POLL=null;}var b=document.getElementById('btnManusStop');if(b)b.style.display='none';var mb=document.getElementById('btnManus');if(mb)mb.disabled=false;}
+async function manusCriar(){
+  var ta=document.getElementById('manusPrompt'),out=document.getElementById('outManus'),btn=document.getElementById('btnManus');
+  var prompt=(ta.value||'').trim();
+  if(!prompt){out.innerHTML='<div class="needconn">Descreva a tarefa para o Manus primeiro.</div>';return;}
+  var profile=document.getElementById('manusProfile').value;
+  manusStop();btn.disabled=true;MANUS_TID=null;
+  out.innerHTML=loading('Criando a tarefa no Manus…');
+  var full='[DIRETRIZES OBRIGATÓRIAS DE CONFORMIDADE — SIGA À RISCA]\n'+SYS+'\n\n[TAREFA]\n'+prompt;
+  try{
+    var d=await manusCall({action:'create',prompt:full,agent_profile:profile,locale:'pt-BR',title:prompt.slice(0,60)});
+    if(d.error){out.innerHTML='<div class="errbox"><b>Erro:</b> '+esc(d.error)+(d.code?(' ('+esc(d.code)+')'):'')+'</div>';btn.disabled=false;return;}
+    MANUS_TID=d.task_id;
+    var link=d.task_url?(' · <a href="'+esc(d.task_url)+'" target="_blank" rel="noopener">abrir no Manus ↗</a>'):'';
+    out.innerHTML='<div class="handoff" id="manusStatus"><span class="spin"></span> Tarefa criada. O Manus está trabalhando…'+link+'</div><div id="manusResult"></div>';
+    var sb=document.getElementById('btnManusStop');if(sb)sb.style.display='';
+    manusPollLoop(0);
+  }catch(e){out.innerHTML='<div class="errbox"><b>Erro:</b> '+esc(e.message)+'</div>';btn.disabled=false;}
+}
+async function manusPollLoop(tries){
+  if(!MANUS_TID)return;
+  var stEl=document.getElementById('manusStatus'),resEl=document.getElementById('manusResult'),btn=document.getElementById('btnManus');
+  try{
+    var d=await manusCall({action:'poll',task_id:MANUS_TID});
+    if(d.error && !d.done && d.status!=='error'){if(stEl)stEl.innerHTML='⚠️ '+esc(d.error)+' — tentando de novo…';MANUS_POLL=setTimeout(function(){manusPollLoop(tries+1);},12000);return;}
+    if(d.text && resEl){resEl.innerHTML=edBlock(d.text);}
+    if(d.done){
+      manusStop();
+      if(d.status==='error'){if(stEl)stEl.innerHTML='<div class="errbox"><b>A tarefa terminou com erro:</b> '+esc(d.error||'')+'</div>';}
+      else{
+        if(stEl)stEl.innerHTML='✅ Tarefa concluída.';
+        if(resEl)resEl.innerHTML=(d.text?edBlock(d.text):'<div class="needconn">A tarefa terminou sem texto de resposta.</div>')+manusAttHtml(d.attachments)+manusFollowHtml();
+      }
+      return;
+    }
+    if(d.waiting){
+      manusStop();
+      if(stEl)stEl.innerHTML='⏸️ O Manus está aguardando uma resposta sua. Responda abaixo ou pela aba do Manus.';
+      if(resEl)resEl.innerHTML=(d.text?edBlock(d.text):'')+manusFollowHtml();
+      return;
+    }
+    if(stEl)stEl.innerHTML='<span class="spin"></span> '+esc(d.brief||'Trabalhando…')+' <span class="tk">(verificação '+(tries+1)+')</span>';
+    if(tries>70){if(stEl)stEl.innerHTML='⌛ A tarefa está demorando mais que o normal. Acompanhe pelo link “abrir no Manus” e volte depois — o resultado fica salvo lá.';manusStop();return;}
+    var wait=tries<5?5000:(tries<20?9000:14000);
+    MANUS_POLL=setTimeout(function(){manusPollLoop(tries+1);},wait);
+  }catch(e){if(stEl)stEl.innerHTML='⚠️ '+esc(e.message)+' — tentando de novo…';MANUS_POLL=setTimeout(function(){manusPollLoop(tries+1);},12000);}
+}
+function manusAttHtml(att){
+  if(!att||!att.length)return '';
+  var h='<div class="handoff" style="margin-top:10px">\U0001F4CE <b>Anexos gerados pelo Manus:</b><br>';
+  h+=att.map(function(a){var u=(a&&(a.url||a.href||a.file_url||a.download_url))||'';var n=(a&&(a.filename||a.name||a.title))||u||'anexo';return u?('• <a href="'+esc(u)+'" target="_blank" rel="noopener">'+esc(n)+'</a>'):('• '+esc(n));}).join('<br>');
+  return h+'</div>';
+}
+function manusFollowHtml(){
+  return '<div class="selrow" style="margin-top:10px">'
+    +'<input id="manusFollow" type="text" placeholder="Enviar um ajuste ou continuação para o Manus…" style="flex:1;padding:9px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13.5px">'
+    +'<button class="go alt" onclick="manusEnviarFollow()">↩️ Enviar continuação</button></div>';
+}
+async function manusEnviarFollow(){
+  var inp=document.getElementById('manusFollow');if(!inp||!MANUS_TID)return;
+  var msg=(inp.value||'').trim();if(!msg)return;
+  var stEl=document.getElementById('manusStatus');inp.disabled=true;
+  try{
+    var d=await manusCall({action:'followup',task_id:MANUS_TID,prompt:msg});
+    if(d.error){if(stEl){stEl.className='handoff';stEl.innerHTML='⚠️ '+esc(d.error);}inp.disabled=false;return;}
+    inp.value='';inp.disabled=false;
+    if(stEl)stEl.innerHTML='<span class="spin"></span> Continuação enviada. O Manus está processando…';
+    var sb=document.getElementById('btnManusStop');if(sb)sb.style.display='';
+    manusStop();var mb=document.getElementById('btnManus');if(mb)mb.disabled=true;
+    manusPollLoop(0);
+  }catch(e){if(stEl)stEl.innerHTML='⚠️ '+esc(e.message);inp.disabled=false;}
+}
 
 /* ===== init: restaura tema/provedor, carrega modelos do backend ===== */
 (function(){
