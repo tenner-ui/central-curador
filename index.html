@@ -195,9 +195,55 @@
   <button data-tab="legendas" onclick="switchTab(this)">✍️ Legendas & Hashtags</button>
   <button data-tab="evidencias" onclick="switchTab(this)">🔬 Evidências (PubMed)</button>
   <button data-tab="referencia" onclick="switchTab(this)">🔎 Analisar Referência</button>
+  <button data-tab="manus" onclick="switchTab(this)">🧠 Pesquisa Profunda</button>
 </nav>
 
 <div class="wrap">
+
+<section class="tabpane" id="tab-manus"><div class="tool">
+  <div class="tk">Manus · agente autônomo · pesquisa profunda na web</div><h3>🧠 Pesquisa / Estratégia Profunda</h3>
+  <p class="sub">Descreva a tarefa. O <b>Manus</b> planeja, pesquisa na web, usa ferramentas e devolve o resultado completo (leva alguns minutos). Ideal para calendário editorial, estratégia de conteúdo, benchmark de concorrentes ou revisão ampla de um tema — sempre dentro do compliance do CFM.</p>
+  <textarea id="manusPrompt" rows="4" placeholder="Ex.: Monte um calendário editorial de 4 semanas sobre emagrecimento e reposição hormonal para o Instagram do Instituto Vitality, com temas, ganchos e 3 sugestões de post por semana."></textarea>
+  <div class="selrow" style="margin-top:10px">
+    <button class="go" id="manusBtn" onclick="manusRun()">▶ Pesquisar com Manus</button>
+    <span id="manusStatus" style="font-size:13px;color:#e2d8c4"></span>
+  </div>
+  <div class="handoff">O Manus é um agente autônomo: ele decompõe a tarefa, navega, coleta fontes e sintetiza. Use para trabalho de fôlego; para textos rápidos, use as outras abas.</div>
+  <div class="outwrap" id="manusOut" style="display:none"><div class="mdout" id="manusMd" style="white-space:pre-wrap"></div></div>
+</div></section>
+<script>
+(function(){
+  var polling=null;
+  function mfn(action,payload){
+    return fetch(BACKEND,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(Object.assign({action:action},payload))}).then(function(r){return r.json();});
+  }
+  window.manusRun=function(){
+    var el=document.getElementById('manusPrompt'); var p=((el&&el.value)||'').trim();
+    var st=document.getElementById('manusStatus'); var wrap=document.getElementById('manusOut'); var md=document.getElementById('manusMd'); var btn=document.getElementById('manusBtn');
+    function setS(t){ if(st) st.textContent=t; }
+    function show(t){ if(wrap&&md){ wrap.style.display='block'; md.textContent=t; } }
+    if(!p){ setS('Escreva a tarefa primeiro.'); return; }
+    if(polling){ clearInterval(polling); polling=null; }
+    btn.disabled=true; setS('Criando tarefa no Manus…'); show('');
+    mfn('manus',{prompt:p}).then(function(c){
+      if(!c||c.error||!c.task_id){ setS('Erro: '+((c&&c.error)||'sem task_id')); btn.disabled=false; return; }
+      var taskId=c.task_id; setS('Manus trabalhando… (leva alguns minutos)');
+      var n=0, MAX=180;
+      polling=setInterval(function(){
+        n++;
+        mfn('manus_poll',{task_id:taskId}).then(function(res){
+          if(res&&res.texto) show(res.texto);
+          if(res&&res.status==='stopped'){ clearInterval(polling); polling=null; setS('✅ Concluído.'); btn.disabled=false; }
+          else if(res&&res.status==='error'){ clearInterval(polling); polling=null; setS('⚠ O Manus retornou erro.'); btn.disabled=false; }
+          else if(res&&res.status==='waiting'){ setS('⏸ O Manus aguarda uma confirmação — veja no painel do Manus.'); }
+          else { setS('Manus trabalhando… ('+n+')'); }
+        }).catch(function(){});
+        if(n>=MAX){ clearInterval(polling); polling=null; setS('Ainda processando — tente novamente em instantes ou abra o painel do Manus.'); btn.disabled=false; }
+      },5000);
+    }).catch(function(e){ setS('Erro: '+((e&&e.message)||e)); btn.disabled=false; });
+  };
+})();
+</script>
 
 <section class="tabpane active" id="tab-avaliador"><div class="tool">
   <div class="tk">IA · pesquisa evidências recentes · usa o tema central</div><h3>⚖ Avaliar Tema</h3>
